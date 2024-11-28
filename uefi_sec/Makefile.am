@@ -18,3 +18,8 @@ uefi_sec_CPPFLAGS = $(AM_CPPFLAGS)
 uefi_sec_CFLAGS = $(AM_CFLAGS)
 uefi_sec_LDFLAGS = -lpthread -ldl -lQseeComApi -ldrmfs -lrpmb -lssd
 uefi_sec_LDADD = -lQseeComApi -ldmabufheap -lqcbor -lminkdescriptor
+
+if USE_SYSTEMD
+systemdunitdir = @SYSTEMD_UNITDIR@
+systemdunit_DATA = uefi_sec.service
+endif

@@ -1,0 +1,17 @@
+# Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
+# SPDX-License-Identifier: BSD-3-Clause-Clear
+
+[Unit]
+Description=UEFI Sev Service
+SourcePath=/usr/bin/uefi_sec
+After=qteesupplicant.service
+Requires=qteesupplicant.service
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/uefi_sec
+
+[Install]
+WantedBy=multi-user.target

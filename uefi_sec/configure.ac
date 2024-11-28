@@ -25,6 +25,18 @@ GLIB_LIBS="$GLIB_LIBS"
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
 
+AC_ARG_WITH(systemdunitdir,
+        AC_HELP_STRING([--with-systemdunitdir=DIR],
+        [Path of systemd unit directory @<:@default=LIBDIR/systemd/system@:>@]),
+        [path_systemdunit=$withval],
+        [path_systemdunit="`$PKG_CONFIG --variable=systemdsystemunitdir systemd`"])
+
+if (test -n "${path_systemdunit}"); then
+        SYSTEMD_UNITDIR="${path_systemdunit}"
+        AC_SUBST(SYSTEMD_UNITDIR)
+fi
+AM_CONDITIONAL(USE_SYSTEMD, test -n "${path_systemdunit}")
+
 AC_CONFIG_FILES([Makefile])
 
 LT_INIT
