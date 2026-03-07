@@ -37,7 +37,7 @@ def encode_value(value: str) -> bytes:
             text = f.read()
         # Split on whitespace or commas
         parts = re.split(r'[\s,]+', text.strip())
-        return b''.join(struct.pack(">I", int(p, 0)) for p in parts if p)
+        return b''.join(struct.pack(">I", int(p, 16)) for p in parts if p)
 
     # Single integer
     int_pattern = re.compile(r'^-?(0x[0-9a-fA-F]+|\d+)$')
