@@ -256,8 +256,10 @@ def UpdateJsonFile(args):
         print('Error occurred while writing to the JSON file: {0}.'.format(e))
         sys.exit(1)
 
-if __name__ == '__main__':
+def main():
     args = ParseArguments()
     UpdateJsonFile(args)
 
-    
+
+if __name__ == '__main__':
+    main()

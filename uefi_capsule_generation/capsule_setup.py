@@ -620,33 +620,28 @@ def Main(args):
                     sync_common_dir_stats)
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser (
-                            prog = 
-                                __prog__,
-                            description =
-                                "VERSION: "
-                                +  __version__
-                                + ", " 
-                                + __description__ ,
-                            conflict_handler = 
-                                'resolve',
-                            )
-
+def main():
+    parser = argparse.ArgumentParser(
+        prog=__prog__,
+        description="VERSION: " + __version__ + ", " + __description__,
+        conflict_handler='resolve',
+    )
     parser.add_argument("-c", "--clean_build",
-                        dest = 'clean_build', default = False,
-                        help = "If set to 'True', " \
-                            "deletes any existing folders/files " \
-                            "and download again. Default - 'False'")
-
-    parser.add_argument("-f", "--full_build", 
-                        dest = 'full_build', default = False,
-                        help = "If set to 'True', " \
-                            "downloads additional submodules " \
-                            "for a full edk2 build. " \
-                            "These submodules and full build are not " \
-                            "required for capsule update. Default - 'False'")
-
+                        dest='clean_build', default=False,
+                        help="If set to 'True', deletes any existing "
+                             "folders/files and download again. "
+                             "Default - 'False'")
+    parser.add_argument("-f", "--full_build",
+                        dest='full_build', default=False,
+                        help="If set to 'True', downloads additional "
+                             "submodules for a full edk2 build. "
+                             "These submodules and full build are not "
+                             "required for capsule update. "
+                             "Default - 'False'")
     args = parser.parse_args()
     Main(args)
+
+
+if __name__ == "__main__":
+    main()
  

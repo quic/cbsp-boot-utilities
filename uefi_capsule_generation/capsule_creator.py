@@ -17,7 +17,7 @@ def run_command(command, fail_on_error=False):
         print(f"Error: {str(e)}")
         exit(1)
 
-def main(args):
+def _run(args):
 
     if args.setup:
         run_command("python3 capsule_setup.py", fail_on_error=True)
@@ -43,26 +43,48 @@ def main(args):
     else:
         run_command(f'python3 GenerateCapsule.py -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v')
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Combined script for Capsule generation")
-    parser.add_argument('-fwver', required=True, help='Firmware version')
-    parser.add_argument('-lfwver', required=True, help='Lowest supported firmware version')
-    parser.add_argument('-config', required=True, help='Configuration JSON file')
-    parser.add_argument('-p', required=True, help='Certificate file')
-    parser.add_argument('-x', required=True, help='Root certificate file')
-    parser.add_argument('-oc', required=True, help='Sub certificate file')
-    parser.add_argument('-guid', required=True, help='FMP GUID')
-    parser.add_argument('-capsule', required=True, help='Output capsule file name')
-    parser.add_argument('-images', required=True, help='Images directory')
-    parser.add_argument('-setup', action='store_true', help='Run capsule setup script')
-    parser.add_argument('--edk2-path', dest='edk2_path', default=None,
-                        help='Path to an existing edk2 directory with built GenFfs/GenFv tools; '
-                             'when provided, capsule_setup.py does not need to be run')
-    parser.add_argument('--ptool-path', dest='ptool_path', default=None,
-                        help='Path to an existing qcom-ptool directory; '
-                             'when provided, the repository is not cloned')
-    parser.add_argument("-S", "--StorageType", choices=["UFS", "EMMC"], required=True, help="Specify storage type: UFS or EMMC")
-    parser.add_argument("-T", "--target", required=True, help="Specify target platform (e.g., QCS6490)")
-
+def main():
+    parser = argparse.ArgumentParser(
+        description="Combined script for Capsule generation")
+    parser.add_argument('-fwver', required=True,
+                        help='Firmware version')
+    parser.add_argument('-lfwver', required=True,
+                        help='Lowest supported firmware version')
+    parser.add_argument('-config', required=True,
+                        help='Configuration JSON file')
+    parser.add_argument('-p', required=True,
+                        help='Certificate file')
+    parser.add_argument('-x', required=True,
+                        help='Root certificate file')
+    parser.add_argument('-oc', required=True,
+                        help='Sub certificate file')
+    parser.add_argument('-guid', required=True,
+                        help='FMP GUID')
+    parser.add_argument('-capsule', required=True,
+                        help='Output capsule file name')
+    parser.add_argument('-images', required=True,
+                        help='Images directory')
+    parser.add_argument('-setup', action='store_true',
+                        help='Run capsule setup script')
+    parser.add_argument(
+        '--edk2-path', dest='edk2_path', default=None,
+        help='Path to an existing edk2 directory with built '
+             'GenFfs/GenFv tools; when provided, '
+             'capsule_setup.py does not need to be run')
+    parser.add_argument(
+        '--ptool-path', dest='ptool_path', default=None,
+        help='Path to an existing qcom-ptool directory; '
+             'when provided, the repository is not cloned')
+    parser.add_argument(
+        "-S", "--StorageType", choices=["UFS", "EMMC"],
+        required=True,
+        help="Specify storage type: UFS or EMMC")
+    parser.add_argument(
+        "-T", "--target", required=True,
+        help="Specify target platform (e.g., QCS6490)")
     args = parser.parse_args()
-    main(args)
+    _run(args)
+
+
+if __name__ == "__main__":
+    main()

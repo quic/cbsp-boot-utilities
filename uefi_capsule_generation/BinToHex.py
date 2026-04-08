@@ -25,9 +25,13 @@ def bin_to_hex(input_file, output_file):
 
     print(f"Conversion successful! Hex data with header written to {output_file}")
 
-if __name__ == "__main__":
+def main():
     import sys
     if len(sys.argv) != 3:
-        print("Usage: python bin_to_hex.py <input_file> <output_file>")
-    else:
-        bin_to_hex(sys.argv[1], sys.argv[2])
+        print("Usage: bin-to-hex <input_file> <output_file>")
+        sys.exit(1)
+    bin_to_hex(sys.argv[1], sys.argv[2])
+
+
+if __name__ == "__main__":
+    main()

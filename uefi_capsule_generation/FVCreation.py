@@ -711,7 +711,9 @@ def The_Main(args):
             os.remove(os.path.join(dir_path, file))
     
     
+def main():
+    The_Main(args=sys.argv[1:])
+
+
 if __name__ == "__main__":
-    args = sys.argv
-    del args[0]
-    The_Main(args=args)
+    main()
