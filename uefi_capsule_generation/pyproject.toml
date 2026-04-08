@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "qcom-capsule-tool"
+version = "1.0.0"
+requires-python = ">=3.8"
+license = "BSD-3-Clause-Clear"
+description = "Qualcomm capsule generation tools for UEFI firmware updates"
+dependencies = [
+    "validators",
+    "requests",
+    "pyelftools",
+    "pylibfdt",
+]
+
+[project.scripts]
+qcom-capsule-tool = "uefi_capsule_generation.cli:main"
+
+[tool.setuptools]
+packages = ["uefi_capsule_generation"]
+package-dir = {"uefi_capsule_generation" = "."}
