@@ -146,37 +146,31 @@ def GetSysFirmwareInfo(args):
             sys.exit(1)
 
         if platform.system() == "Linux":
-            SysFwExePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SYSFW_VERSION_program.py')
-            if not os.path.exists(SysFwExePath):
-                print('SYSFW_VERSION_program.py not found at: {0}'.format(SysFwExePath))
-                sys.exit(1)
-            
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest 
+            # Call SYSFW_VERSION_program to extract the firmware version and lowest
             # supported version
             results = []
             for cmd in commands:
                 try:
-                    output = subprocess.check_output([python_version, SysFwExePath, cmd, SysBinPath]).decode().strip()
+                    output = subprocess.check_output(
+                        [sys.executable, '-m', 'uefi_capsule_generation.SYSFW_VERSION_program', cmd, SysBinPath]
+                    ).decode().strip()
                     results.append(output)
                 except Exception as e:
                     print('Failed to execute command:{0}. Error: {1}'.format(cmd, (e)))
                     sys.exit(1)
-                
+
             (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
             print('Firmware Version is {0}, lowest supported version: {1}'.format(args.FwVersion, args.LowestSupportedVersion))
-        
+
         if platform.system() == "Windows":
-            SysFwExePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SYSFW_VERSION_program.py')
-            if not os.path.exists(SysFwExePath):
-                print('SYSFW_VERSION_program.py not found at: {0}'.format(SysFwExePath))
-                sys.exit(1)
-            
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest 
+            # Call SYSFW_VERSION_program to extract the firmware version and lowest
             # supported version
             results = []
             for cmd in commands:
                 try:
-                    output = subprocess.check_output([python_version, SysFwExePath, cmd, SysBinPath]).decode().strip()
+                    output = subprocess.check_output(
+                        [sys.executable, '-m', 'uefi_capsule_generation.SYSFW_VERSION_program', cmd, SysBinPath]
+                    ).decode().strip()
                     results.append(output)
                 except:
                     print('Failed to execute command:{0}. Error: {1}'.format(cmd, (e)))
@@ -215,7 +209,7 @@ def UpdateJsonFile(args):
         sys.exit(1)
 
     JsonFile = args.JsonFile
-    JsonFilePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), JsonFile)
+    JsonFilePath = os.path.abspath(JsonFile)
     JsonFilePathCheckCount = 0
 
     while not os.path.exists(JsonFilePath) and (JsonFilePathCheckCount < 5):

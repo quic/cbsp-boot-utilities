@@ -42,7 +42,7 @@ def run_make_command_linux(edk2_dir_path):
         print(f"\n\nDirectory '{edk2_dir_path}' does not exist.\n\n")
         return f"Directory '{edk2_dir_path}' does not exist."
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.getcwd()
 
     try:
         os.chdir(edk2_dir_path)
@@ -63,7 +63,7 @@ def update_edk2_submodules_linux(edk2_dir_path):
         print(f"\n\nDirectory '{edk2_dir_path}' does not exist\n\n")
         return f"Directory '{edk2_dir_path}' does not exist"
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.getcwd()
     os.chdir(edk2_dir_path)
 
     try:
@@ -210,7 +210,7 @@ def build_edk2(edk2_dir_path):
 
 def build_edk2_win(edk2_dir_path, full_build):
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.getcwd()
     os.chdir(edk2_dir_path)
 
     if full_build:
@@ -525,99 +525,42 @@ def print_stats(sync_generate_capsule_py_stats,
 
 def Main(args):
 
-    if platform.system() == "Linux":
+    base_dir_abs = os.getcwd()
+    edk2_sync_local_path_abs = os.path.join(base_dir_abs, 'edk2')
 
-        base_dir_abs = os.path.dirname(os.path.abspath(__file__))
-        generate_capsule_py_file_path_abs = os.path.join(base_dir_abs,
-                                                         'GenerateCapsule.py')
-        edk2_sync_local_path_abs = os.path.join(base_dir_abs, 'edk2')
+    if args.clean_build and os.path.exists(edk2_sync_local_path_abs):
+        print("Clean build enabled, removing existing edk2 directory")
+        force_delete_folder(edk2_sync_local_path_abs)
+
+    if platform.system() == "Linux":
         c_dir = os.path.join(edk2_sync_local_path_abs,
                              'BaseTools',
                              'Source',
                              'C')
-        genffs_sync_path_linux_abs = os.path.join(c_dir, 'bin', 'GenFfs')
-        genfv_sync_path_linux_abs = os.path.join(c_dir, 'bin', 'GenFv')
-        genffs_local_path_abs = os.path.join(base_dir_abs, 'GenFfs')
-        genfv_local_path_abs = os.path.join(base_dir_abs, 'GenFv')
-        common_dir_local_sync_path_abs = os.path.join(base_dir_abs, 'Common')
 
-        clean_build(args.clean_build,
-                    generate_capsule_py_file_path_abs,
-                    edk2_sync_local_path_abs,
-                    genffs_local_path_abs,
-                    genfv_local_path_abs,
-                    common_dir_local_sync_path_abs)
+        sync_and_build_edk2_stats = sync_and_build_edk2_linux(
+                                        edk2_sync_local_path_abs,
+                                        c_dir)
 
-        sync_generate_capsule_py_stats = sync_generate_capsule_py(
-                                            generate_capsule_py_sync_url, 
-                                            generate_capsule_py_file_path_abs)
-        sync_and_build_edk2_win_stats = sync_and_build_edk2_linux(
-                                            edk2_sync_local_path_abs, 
-                                            c_dir)
-        copy_GenFfs_win_stats = copy_GenFfs(base_dir_abs, 
-                                            genffs_sync_path_linux_abs, 
-                                            genffs_local_path_abs)
-        copy_GenFv_win_stats = copy_GenFv(base_dir_abs, 
-                                          genfv_sync_path_linux_abs, 
-                                          genfv_local_path_abs)
-        sync_common_dir_stats = sync_common_dir(
-                                            base_dir_abs, 
-                                            common_dir_local_sync_path_abs)
+        if sync_and_build_edk2_stats == True:
+            print("Downloaded and built edk2 successfully")
+            print(f"GenFfs: {os.path.join(c_dir, 'bin', 'GenFfs')}")
+            print(f"GenFv:  {os.path.join(c_dir, 'bin', 'GenFv')}")
+            print(f"GenerateCapsule.py: {os.path.join(edk2_sync_local_path_abs, 'BaseTools', 'Source', 'Python', 'Capsule', 'GenerateCapsule.py')}")
+        else:
+            print(f"Downloading and building edk2 failed: "
+                  f"{sync_and_build_edk2_stats}")
 
-        print_stats(sync_generate_capsule_py_stats,
-                    sync_and_build_edk2_win_stats,
-                    copy_GenFfs_win_stats,
-                    copy_GenFv_win_stats,
-                    sync_common_dir_stats)
-            
     if platform.system() == "Windows":
+        sync_and_build_edk2_stats = sync_and_build_edk2_win(
+                                        edk2_sync_local_path_abs,
+                                        args.full_build)
 
-        base_dir_abs = os.path.dirname(os.path.abspath(__file__))
-        generate_capsule_py_file_path_abs = os.path.join(base_dir_abs,
-                                                         'GenerateCapsule.py')
-        edk2_sync_local_path_abs = os.path.join(base_dir_abs, 'edk2')
-        genffs_sync_path_win_abs = os.path.join(edk2_sync_local_path_abs,
-                                                'GenFfs.exe')
-        genfv_sync_path_win_abs = os.path.join(edk2_sync_local_path_abs,
-                                               'GenFv.exe')
-        genffs_local_path_abs = os.path.join(base_dir_abs, 'GenFfs.exe')
-        genfv_local_path_abs = os.path.join(base_dir_abs, 'GenFv.exe')
-        common_dir_local_sync_path_abs = os.path.join(base_dir_abs, 'Common')
-
-        clean_build(args.clean_build,
-                    generate_capsule_py_file_path_abs,
-                    edk2_sync_local_path_abs,
-                    genffs_local_path_abs,
-                    genfv_local_path_abs,
-                    common_dir_local_sync_path_abs)
-
-        sync_generate_capsule_py_stats = sync_generate_capsule_py(
-                                            generate_capsule_py_sync_url,
-                                            generate_capsule_py_file_path_abs)
-        
-        sync_and_build_edk2_win_stats = sync_and_build_edk2_win(
-                                            edk2_sync_local_path_abs,
-                                            args.full_build)
-        
-        copy_GenFfs_win_stats = copy_GenFfs(
-                                    base_dir_abs,
-                                    genffs_sync_path_win_abs,
-                                    genffs_local_path_abs)
-        
-        copy_GenFv_win_stats = copy_GenFv(
-                                    base_dir_abs,
-                                    genfv_sync_path_win_abs,
-                                    genfv_local_path_abs)
-        
-        sync_common_dir_stats = sync_common_dir(
-                                    base_dir_abs,
-                                    common_dir_local_sync_path_abs)
-
-        print_stats(sync_generate_capsule_py_stats,
-                    sync_and_build_edk2_win_stats,
-                    copy_GenFfs_win_stats,
-                    copy_GenFv_win_stats,
-                    sync_common_dir_stats)
+        if sync_and_build_edk2_stats == True:
+            print("Downloaded and built edk2 successfully")
+        else:
+            print(f"Downloading and building edk2 failed: "
+                  f"{sync_and_build_edk2_stats}")
 
 
 def main():
