@@ -7,13 +7,13 @@
 
 import os
 from enum import Enum
-import FVCreation_header as FVC_h
+from . import FVCreation_header as FVC_h
 import subprocess
 import struct
 import binascii
 import sys
-import XmlParser as xp
-import XmlFwEntryValidation as XFEV
+from . import XmlParser as xp
+from . import XmlFwEntryValidation as XFEV
 import re
 import traceback
 import ctypes

@@ -6,7 +6,7 @@
 
 
 import xml.etree.ElementTree as ET
-import FVCreation_header as FVC_h
+from . import FVCreation_header as FVC_h
 from collections import OrderedDict
 import traceback
 import re

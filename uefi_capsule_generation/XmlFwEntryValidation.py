@@ -5,8 +5,8 @@
 # --------------------------------------------------------------------
 
 
-import FVCreation_header as FVC_h
-import FVCreation as FVC
+from . import FVCreation_header as FVC_h
+from . import FVCreation as FVC
 import uuid
 import ctypes
 
