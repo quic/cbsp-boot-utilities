@@ -2,39 +2,57 @@ name: Capsule Generation CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
 
 jobs:
   build-capsule:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     env:
       REP_ROOT: ${{ github.workspace }}
       CERT_PATH: ${{ github.workspace }}/certs
       BOOT_BINARIES_URL: https://qartifactory-edge.qualcomm.com/artifactory/qsc_releases/software/chip/qualcomm_linux-spf-1-0/qualcomm-linux-spf-1-0_test_device_public/r1.0_00116.0/qcm6490-le-1-0/common/build/ufs/bin/QCM6490_bootbinaries.zip
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.11", "3.12"]
+
     defaults:
       run:
         working-directory: uefi_capsule_generation
+        shell: bash
+
     steps:
     - uses: actions/checkout@v4
 
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11'
+        python-version: ${{ matrix.python-version }}
 
-    - name: Install system dependencies
+    - name: Install system dependencies (Linux)
+      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y uuid-dev device-tree-compiler
-        pip install validators requests pyelftools pylibfdt
+
+    - name: Install system dependencies (macOS)
+      if: runner.os == 'macOS'
+      run: brew install dtc
+
+    - name: Install qcom-capsule-tool
+      working-directory: ${{ github.workspace }}
+      run: pip install ./uefi_capsule_generation
 
     - name: Generate OpenSSL certificates
       working-directory: ${{ github.workspace }}
       run: |
         set -e
 
-        mkdir -p ${CERT_PATH}
-        cd ${CERT_PATH}
+        mkdir -p "${CERT_PATH}"
+        cd "${CERT_PATH}"
 
         # Set env variables with proper configuration:
         export FMP_ROOT_CERT_SUBJECT="/CN=OEM Root CA/O=FMP/OU=OEM Key/L=San Diego/ST=California/C=US"
@@ -43,15 +61,14 @@ jobs:
         export FMP_KEY_PASSWORD="testpassword"
 
         # The demoCA directory should be initialized:
-        mkdir -p demoCA
         mkdir -p demoCA/newcerts
         touch demoCA/index.txt
         echo 01 > demoCA/serial
 
-        cp ${REP_ROOT}/.github/opensslroot.cfg ./
+        cp "${REP_ROOT}/.github/opensslroot.cfg" ./
 
-        # Create rand file:
-        dd if=/dev/urandom of=randfile bs=256 count=1 > /dev/null 2>&1
+        # Create rand file (cross-platform via openssl):
+        openssl rand -out randfile 256
 
         # Generate a Root Key/Certificate:
         openssl genrsa -aes256 -passout "pass:${FMP_KEY_PASSWORD}" -out QcFMPRoot.key 2048
@@ -87,49 +104,64 @@ jobs:
 
     - name: Convert certificate to HEX format
       run: |
-        python3 BinToHex.py ${CERT_PATH}/QcFMPRoot.cer ${CERT_PATH}/QcFMPRoot.inc
+        qcom-capsule-tool bin-to-hex "${CERT_PATH}/QcFMPRoot.cer" "${CERT_PATH}/QcFMPRoot.inc"
         echo "Contents of QcFMPRoot.inc:"
-        cat ${CERT_PATH}/QcFMPRoot.inc
+        cat "${CERT_PATH}/QcFMPRoot.inc"
+
     - name: Setup environment
-      run: |
-        python3 capsule_setup.py
+      run: qcom-capsule-tool setup
+
     - name: Fetch boot binaries
       run: |
-        wget ${BOOT_BINARIES_URL}
+        curl -fsSL -o QCM6490_bootbinaries.zip "${BOOT_BINARIES_URL}"
         unzip QCM6490_bootbinaries.zip -d ./
+
     - name: Add certificates to the XBLConfig
       run: |
-        python3 xblconfig_parser.py ./QCM6490_bootbinaries/xbl_config.elf dump --out-dir ./QCM6490_bootbinaries
+        qcom-capsule-tool parse-config ./QCM6490_bootbinaries/xbl_config.elf dump --out-dir ./QCM6490_bootbinaries
         echo "Successfully dumped XBLConfig sections. Now updating the QcCapsuleRootCert property in the DTB and patching it back to XBLConfig."
 
-        oldcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb 2>&1 | grep QcCapsuleRoot || true)
-        echo "Old value of QcCapsuleRoot property: $oldcert"
-
-        python3 set_dtb_property.py ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb /sw/uefi/uefiplat QcCapsuleRootCert "@list:${CERT_PATH}/QcFMPRoot.inc" ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb
-
-        newcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb 2>&1 | grep QcCapsuleRoot || true)
-        echo "New value of QcCapsuleRoot property: $newcert"
-
-        python3 xblconfig_parser.py ./QCM6490_bootbinaries/xbl_config.elf replace 8 ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb ./QCM6490_bootbinaries/xbl_config_patched.elf
-        mv ./QCM6490_bootbinaries/xbl_config_patched.elf ./QCM6490_bootbinaries/xbl_config.elf
-        echo "Old value of QcCapsuleRoot property: $oldcert"
-        echo "New value of QcCapsuleRoot property: $newcert"
-        if [ "$oldcert" = "$newcert" ]; then
-          echo "Error: Certificate was not updated in XBLConfig"
-          exit 1
+        # fdtdump is available on Linux (device-tree-compiler) and macOS (dtc via brew)
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          oldcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb 2>&1 | grep QcCapsuleRoot || true)
+          echo "Old value of QcCapsuleRoot property: $oldcert"
         fi
+
+        qcom-capsule-tool set-dtb-property ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb /sw/uefi/uefiplat QcCapsuleRootCert "@list:${CERT_PATH}/QcFMPRoot.inc" ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb
+
+        if [ "$RUNNER_OS" != "Windows" ]; then
+          newcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb 2>&1 | grep QcCapsuleRoot || true)
+          echo "New value of QcCapsuleRoot property: $newcert"
+          echo "Old value of QcCapsuleRoot property: $oldcert"
+          if [ "$oldcert" = "$newcert" ]; then
+            echo "Error: Certificate was not updated in XBLConfig"
+            exit 1
+          fi
+        fi
+
+        qcom-capsule-tool parse-config ./QCM6490_bootbinaries/xbl_config.elf replace 8 ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb ./QCM6490_bootbinaries/xbl_config_patched.elf
+        mv ./QCM6490_bootbinaries/xbl_config_patched.elf ./QCM6490_bootbinaries/xbl_config.elf
+
     - name: Generate firmware version and create firmware volume
       run: |
-        python3 SYSFW_VERSION_program.py -Gen -FwVer 0.0.1.2 -LFwVer 0.0.0.0 -O SYSFW_VERSION.bin
-        python3 SYSFW_VERSION_program.py  --PrintAll SYSFW_VERSION.bin
-        python3 FVCreation.py firmware.fv -FvType "SYS_FW" FvUpdate.xml SYSFW_VERSION.bin ./QCM6490_bootbinaries
+        qcom-capsule-tool sysfw-version-create -Gen -FwVer 0.0.1.2 -LFwVer 0.0.0.0 -O SYSFW_VERSION.bin
+        qcom-capsule-tool sysfw-version-create --PrintAll SYSFW_VERSION.bin
+        qcom-capsule-tool fv-create firmware.fv -FvType "SYS_FW" FvUpdate.xml SYSFW_VERSION.bin ./QCM6490_bootbinaries
+
     - name: Update JSON parameters
       run: |
-        python3 UpdateJsonParameters.py -j config.json -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv \
-            -p ${CERT_PATH}/QcFMPCert.pem -x ${CERT_PATH}/QcFMPRoot.pub.pem -oc ${CERT_PATH}/QcFMPSub.pub.pem -g 6F25BFD2-A165-468B-980F-AC51A0A45C52
+        qcom-capsule-tool update-json -j config.json -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv \
+            -p "${CERT_PATH}/QcFMPCert.pem" -x "${CERT_PATH}/QcFMPRoot.pub.pem" -oc "${CERT_PATH}/QcFMPSub.pub.pem" -g 6F25BFD2-A165-468B-980F-AC51A0A45C52
+
+    # GenerateCapsule.py is the edk2 upstream tool downloaded by `qcom-capsule-tool setup`.
+    # capsule_setup.py only builds edk2 on Linux, so these steps are Linux-only.
     - name: Generate capsule file
+      if: runner.os == 'Linux'
       run: |
-        python3 GenerateCapsule.py -e -j config.json -o capsule_file.cap --capflag PersistAcrossReset -v
+        python3 edk2/BaseTools/Source/Python/Capsule/GenerateCapsule.py \
+            -e -j config.json -o capsule_file.cap --capflag PersistAcrossReset -v
+
     - name: Dump capsule information
+      if: runner.os == 'Linux'
       run: |
-        python3 GenerateCapsule.py --dump-info capsule_file.cap
+        python3 edk2/BaseTools/Source/Python/Capsule/GenerateCapsule.py --dump-info capsule_file.cap
