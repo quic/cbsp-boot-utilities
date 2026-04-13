@@ -1,0 +1,135 @@
+name: Capsule Generation CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-capsule:
+    runs-on: ubuntu-latest
+    env:
+      REP_ROOT: ${{ github.workspace }}
+      CERT_PATH: ${{ github.workspace }}/certs
+      BOOT_BINARIES_URL: https://qartifactory-edge.qualcomm.com/artifactory/qsc_releases/software/chip/qualcomm_linux-spf-1-0/qualcomm-linux-spf-1-0_test_device_public/r1.0_00116.0/qcm6490-le-1-0/common/build/ufs/bin/QCM6490_bootbinaries.zip
+    defaults:
+      run:
+        working-directory: uefi_capsule_generation
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y uuid-dev device-tree-compiler
+        pip install validators requests pyelftools pylibfdt
+
+    - name: Generate OpenSSL certificates
+      working-directory: ${{ github.workspace }}
+      run: |
+        set -e
+
+        mkdir -p ${CERT_PATH}
+        cd ${CERT_PATH}
+
+        # Set env variables with proper configuration:
+        export FMP_ROOT_CERT_SUBJECT="/CN=OEM Root CA/O=FMP/OU=OEM Key/L=San Diego/ST=California/C=US"
+        export FMP_CA_CERT_SUBJECT="/CN=OEM Intermediate CA/O=FMP/OU=OEM Key/L=San Diego/ST=California/C=US"
+        export FMP_USER_CERT_SUBJECT="/CN=OEM User/O=FMP/OU=OEM Key/L=San Diego/ST=California/C=US"
+        export FMP_KEY_PASSWORD="testpassword"
+
+        # The demoCA directory should be initialized:
+        mkdir -p demoCA
+        mkdir -p demoCA/newcerts
+        touch demoCA/index.txt
+        echo 01 > demoCA/serial
+
+        cp ${REP_ROOT}/.github/opensslroot.cfg ./
+
+        # Create rand file:
+        dd if=/dev/urandom of=randfile bs=256 count=1 > /dev/null 2>&1
+
+        # Generate a Root Key/Certificate:
+        openssl genrsa -aes256 -passout "pass:${FMP_KEY_PASSWORD}" -out QcFMPRoot.key 2048
+        openssl req -new -x509 -config opensslroot.cfg -subj "${FMP_ROOT_CERT_SUBJECT}" -days 3650 \
+          -passin "pass:${FMP_KEY_PASSWORD}" -key QcFMPRoot.key -out QcFMPRoot.crt
+        openssl x509 -in QcFMPRoot.crt -out QcFMPRoot.cer -outform DER
+        openssl x509 -inform DER -in QcFMPRoot.cer -outform PEM -out QcFMPRoot.pub.pem
+
+        # Generate the Intermediate Key/Certificate:
+        openssl genrsa -aes256 -passout "pass:${FMP_KEY_PASSWORD}" -out QcFMPSub.key 2048
+        openssl req -new -config opensslroot.cfg -subj "${FMP_CA_CERT_SUBJECT}" \
+            -passin "pass:${FMP_KEY_PASSWORD}" -key QcFMPSub.key -out QcFMPSub.csr
+        openssl ca -config opensslroot.cfg -extensions v3_ca -batch \
+            -in QcFMPSub.csr -days 3650 -out QcFMPSub.crt -cert QcFMPRoot.crt \
+            -passin "pass:${FMP_KEY_PASSWORD}" -keyfile QcFMPRoot.key
+        openssl x509 -in QcFMPSub.crt -out QcFMPSub.cer -outform DER
+        openssl x509 -inform DER -in QcFMPSub.cer -outform PEM -out QcFMPSub.pub.pem
+
+        # Generate User Key Pair/Certificate for Data Signing:
+        openssl genrsa -aes256 -passout "pass:${FMP_KEY_PASSWORD}" -out QcFMPCert.key 2048
+        openssl req -new -config opensslroot.cfg -subj "${FMP_USER_CERT_SUBJECT}" \
+            -passin "pass:${FMP_KEY_PASSWORD}" -key QcFMPCert.key -out QcFMPCert.csr
+        openssl ca -config opensslroot.cfg -batch -in QcFMPCert.csr -days 3650 \
+            -out QcFMPCert.crt -cert QcFMPSub.crt -passin "pass:${FMP_KEY_PASSWORD}" -keyfile QcFMPSub.key
+        openssl x509 -in QcFMPCert.crt -out QcFMPCert.cer -outform DER
+        openssl x509 -inform DER -in QcFMPCert.cer -outform PEM -out QcFMPCert.pub.pem
+
+        # Convert the User Key and Certificate:
+        openssl pkcs12 -export -passout "pass:${FMP_KEY_PASSWORD}" -out QcFMPCert.pfx \
+            -passin "pass:${FMP_KEY_PASSWORD}" -inkey QcFMPCert.key -in QcFMPCert.crt
+        openssl pkcs12 -passin "pass:${FMP_KEY_PASSWORD}" -in QcFMPCert.pfx -nodes \
+            -out QcFMPCert.pem
+
+    - name: Convert certificate to HEX format
+      run: |
+        python3 BinToHex.py ${CERT_PATH}/QcFMPRoot.cer ${CERT_PATH}/QcFMPRoot.inc
+        echo "Contents of QcFMPRoot.inc:"
+        cat ${CERT_PATH}/QcFMPRoot.inc
+    - name: Setup environment
+      run: |
+        python3 capsule_setup.py
+    - name: Fetch boot binaries
+      run: |
+        wget ${BOOT_BINARIES_URL}
+        unzip QCM6490_bootbinaries.zip -d ./
+    - name: Add certificates to the XBLConfig
+      run: |
+        python3 xblconfig_parser.py ./QCM6490_bootbinaries/xbl_config.elf dump --out-dir ./QCM6490_bootbinaries
+        echo "Successfully dumped XBLConfig sections. Now updating the QcCapsuleRootCert property in the DTB and patching it back to XBLConfig."
+
+        oldcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb 2>&1 | grep QcCapsuleRoot || true)
+        echo "Old value of QcCapsuleRoot property: $oldcert"
+
+        python3 set_dtb_property.py ./QCM6490_bootbinaries/post-ddr-kodiak-1.0.dtb /sw/uefi/uefiplat QcCapsuleRootCert "@list:${CERT_PATH}/QcFMPRoot.inc" ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb
+
+        newcert=$(fdtdump ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb 2>&1 | grep QcCapsuleRoot || true)
+        echo "New value of QcCapsuleRoot property: $newcert"
+
+        python3 xblconfig_parser.py ./QCM6490_bootbinaries/xbl_config.elf replace 8 ./QCM6490_bootbinaries/post-ddr-kodiak-1.0-updated.dtb ./QCM6490_bootbinaries/xbl_config_patched.elf
+        mv ./QCM6490_bootbinaries/xbl_config_patched.elf ./QCM6490_bootbinaries/xbl_config.elf
+        echo "Old value of QcCapsuleRoot property: $oldcert"
+        echo "New value of QcCapsuleRoot property: $newcert"
+        if [ "$oldcert" = "$newcert" ]; then
+          echo "Error: Certificate was not updated in XBLConfig"
+          exit 1
+        fi
+    - name: Generate firmware version and create firmware volume
+      run: |
+        python3 SYSFW_VERSION_program.py -Gen -FwVer 0.0.1.2 -LFwVer 0.0.0.0 -O SYSFW_VERSION.bin
+        python3 SYSFW_VERSION_program.py  --PrintAll SYSFW_VERSION.bin
+        python3 FVCreation.py firmware.fv -FvType "SYS_FW" FvUpdate.xml SYSFW_VERSION.bin ./QCM6490_bootbinaries
+    - name: Update JSON parameters
+      run: |
+        python3 UpdateJsonParameters.py -j config.json -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv \
+            -p ${CERT_PATH}/QcFMPCert.pem -x ${CERT_PATH}/QcFMPRoot.pub.pem -oc ${CERT_PATH}/QcFMPSub.pub.pem -g 6F25BFD2-A165-468B-980F-AC51A0A45C52
+    - name: Generate capsule file
+      run: |
+        python3 GenerateCapsule.py -e -j config.json -o capsule_file.cap --capflag PersistAcrossReset -v
+    - name: Dump capsule information
+      run: |
+        python3 GenerateCapsule.py --dump-info capsule_file.cap
