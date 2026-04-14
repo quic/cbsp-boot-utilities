@@ -17,7 +17,6 @@ import subprocess
 import os
 import shutil
 import platform
-import stat
 import argparse
 import validators
 import traceback
@@ -78,7 +77,7 @@ def update_edk2_submodules_linux(edk2_dir_path):
         )
     except:
         print(
-            f"\n\nFailed executing: subprocess.run("
+            "\n\nFailed executing: subprocess.run("
             "['git', 'submodule', 'update', '--init', '--recursive'],"
             " check=True)\n\n"
         )
@@ -187,7 +186,7 @@ def sync_edk2_win(clone_dir):
 
     if not validators.url(edk2_git_repo_sync_url):
         print(f"Invalid URL: {edk2_git_repo_sync_url}")
-        print(f"Terminated copying edk2")
+        print("Terminated copying edk2")
         return f"Invalid URL: {edk2_git_repo_sync_url}"
 
     try:
@@ -207,7 +206,7 @@ def update_edk2_submodules_win(edk2_dir_path):
         subprocess.run(["git", "submodule", "update", "--init"], check=True)
     except:
         print(
-            f"Failed executing: subprocess.run("
+            "Failed executing: subprocess.run("
             "['git', 'submodule', 'update', '--init'], check=True)"
         )
         print(traceback.format_exc())
@@ -222,7 +221,7 @@ def build_edk2(edk2_dir_path):
         subprocess.run(["edksetup.bat", "Rebuild"], check=True)
     except:
         print(
-            f"Failed executing: subprocess.run(['edksetup.bat', 'Rebuild'], check=True)"
+            "Failed executing: subprocess.run(['edksetup.bat', 'Rebuild'], check=True)"
         )
         print(traceback.format_exc())
         return "Failed to build edk2"
@@ -322,7 +321,7 @@ def sync_generate_capsule_py(
 
     if not validators.url(generate_capsule_py_sync_url):
         print(f"Invalid URL: {generate_capsule_py_sync_url}")
-        print(f"Terminated copying GenerateCapsule.py")
+        print("Terminated copying GenerateCapsule.py")
         return f"Invalid URL: {generate_capsule_py_sync_url}"
 
     try:
@@ -418,7 +417,7 @@ def sync_single_dir(edk2_git_repo_sync_url, branch, target_dir, local_path):
 
         subprocess.run(["git", "pull", "origin", branch], cwd=local_path)
     except:
-        print(f"Failed to sync common dir")
+        print("Failed to sync common dir")
         print(traceback.format_exc())
         return "Failed to sync common dir"
 

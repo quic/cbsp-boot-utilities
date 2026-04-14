@@ -221,7 +221,7 @@ def main():
             safe_clone(repo_dir)
         target = get_target_name(args.T)
         if not target:
-            print(f"Provided target is Unknown !!! Please re-check")
+            print("Provided target is Unknown !!! Please re-check")
             sys.exit(1)
         partition_conf_path = os.path.join(
             repo_dir, "platforms", target, "ufs", "partitions.conf"

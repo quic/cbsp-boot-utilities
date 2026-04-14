@@ -7,7 +7,6 @@ import re
 import struct
 import sys
 
-from pathlib import Path
 
 
 def encode_value(value: str) -> bytes:

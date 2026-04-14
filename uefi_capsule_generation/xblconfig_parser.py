@@ -7,7 +7,6 @@ import hashlib
 import io
 import os
 import struct
-import sys
 
 from dataclasses import dataclass
 from typing import List, Tuple
@@ -255,7 +254,7 @@ def dump_from_meta(elf_path: str, out_dir: str, meta_ph_index: int) -> None:
         f"Metadata (PH#{meta_ph_index}) xcfg_type='{hdr.xcfg_type}' "
         f"v{hdr.major}.{hdr.minor} entries={hdr.entries} meta_size={hdr.meta_size}"
     )
-    print(f"Dumping items -> program headers starting at index 2 (i -> PH i+2):\n")
+    print("Dumping items -> program headers starting at index 2 (i -> PH i+2):\n")
 
     for idx, it in enumerate(items):
         name = it.config_name

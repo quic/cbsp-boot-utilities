@@ -3,9 +3,7 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
-import traceback
 import json
-import os
 from collections import OrderedDict
 
 

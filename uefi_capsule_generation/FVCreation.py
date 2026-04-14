@@ -16,7 +16,6 @@ import XmlFwEntryValidation as XFEV
 import re
 import traceback
 import ctypes
-import pickle
 import platform
 import uuid
 
@@ -657,7 +656,7 @@ def generate_sys_fw_ffs_list(
                 print(f"ERROR: Failure locating {s_file} file to create FV.")
                 return False
 
-    except Exception as e:
+    except Exception:
         print(traceback.format_exc())
 
     return True
