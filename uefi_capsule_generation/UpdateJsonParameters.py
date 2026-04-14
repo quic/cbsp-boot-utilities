@@ -253,7 +253,7 @@ def GetSysFirmwareInfo(args):
                         .strip()
                     )
                     results.append(output)
-                except:
+                except Exception as e:
                     print("Failed to execute command:{0}. Error: {1}".format(cmd, (e)))
                     print(traceback.format_exc())
 

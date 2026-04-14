@@ -236,7 +236,7 @@ def generate_fv_main_file(lsFFsFiles):
             for sFile in lsFFsFiles:
                 sw.write("EFI_FILE_NAME = " + sFile + "\n")
         return True
-    except:
+    except Exception:
         print(f"Error creating {FV_MAIN_INF_NAME} file.")
         return False
 

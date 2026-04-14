@@ -52,7 +52,7 @@ def run_make_command_linux(edk2_dir_path):
     try:
         os.chdir(edk2_dir_path)
         subprocess.run(["make"], check=True)
-    except:
+    except Exception:
         print("\n", traceback.format_exc())
         print("\nFailed to build edk2\n\n")
         return "Failed to build edk2"
@@ -75,7 +75,7 @@ def update_edk2_submodules_linux(edk2_dir_path):
         subprocess.run(
             ["git", "submodule", "update", "--init", "--recursive"], check=True
         )
-    except:
+    except Exception:
         print(
             "\n\nFailed executing: subprocess.run("
             "['git', 'submodule', 'update', '--init', '--recursive'],"
@@ -192,7 +192,7 @@ def sync_edk2_win(clone_dir):
     try:
         subprocess.run("cmd /c " + git_command, check=True)
         print("\n\n\nEdk2 cloning complete\n\n")
-    except:
+    except Exception:
         print("\n", traceback.format_exc())
         print("\nFailed to sync edk2 from github\n\n")
         return "Failed to sync edk2 from github"
@@ -204,7 +204,7 @@ def update_edk2_submodules_win(edk2_dir_path):
     try:
         os.chdir(edk2_dir_path)
         subprocess.run(["git", "submodule", "update", "--init"], check=True)
-    except:
+    except Exception:
         print(
             "Failed executing: subprocess.run("
             "['git', 'submodule', 'update', '--init'], check=True)"
@@ -219,7 +219,7 @@ def build_edk2(edk2_dir_path):
     try:
         os.chdir(edk2_dir_path)
         subprocess.run(["edksetup.bat", "Rebuild"], check=True)
-    except:
+    except Exception:
         print(
             "Failed executing: subprocess.run(['edksetup.bat', 'Rebuild'], check=True)"
         )
@@ -288,7 +288,7 @@ def del_file(file_path):
         os.remove(file_path)
         print(f"File deleted successfully: {file_path}")
 
-    except:
+    except Exception:
         print(f"Failed to delete file: {file_path}")
         print(traceback.format_exc())
 
@@ -330,7 +330,7 @@ def sync_generate_capsule_py(
             with open(generate_capsule_py_file_path_abs, "wb") as file:
                 file.write(response.content)
             print("GenerateCapsule.py File downloaded successfully\n\n")
-    except:
+    except Exception:
         print(traceback.format_exc())
         print("\nFailed to download file\n\n")
         return "Failed to download file"
@@ -346,7 +346,7 @@ def copy_GenFv(base_dir_abs, genfv_path_win, genfv_local_path_abs):
     try:
         shutil.copy(genfv_path_win, base_dir_abs)
         print(f"Copied {genfv_path_win} to {base_dir_abs}")
-    except:
+    except Exception:
         print(
             f"\n\nFailed to copy GenFv.exe from {genfv_path_win} to {base_dir_abs}\n\n"
         )
@@ -365,7 +365,7 @@ def copy_GenFfs(base_dir_abs, genffs_path_win, genffs_local_path_abs):
     try:
         shutil.copy(genffs_path_win, base_dir_abs)
         print(f"Copied {genffs_path_win} to {base_dir_abs}")
-    except:
+    except Exception:
         print(
             f"\n\nFailed to copy GenFv.exe from {genffs_path_win} to {base_dir_abs}\n\n"
         )
@@ -416,7 +416,7 @@ def sync_single_dir(edk2_git_repo_sync_url, branch, target_dir, local_path):
             f.write("%s/\n" % (target_dir))
 
         subprocess.run(["git", "pull", "origin", branch], cwd=local_path)
-    except:
+    except Exception:
         print("Failed to sync common dir")
         print(traceback.format_exc())
         return "Failed to sync common dir"
@@ -450,7 +450,7 @@ def sync_common_dir(base_dir_abs, common_dir_local_sync_path_abs):
             local_path=temp_local_working_dir_path,
         )
         print("\n\nCompleted common folder sync\n\n")
-    except:
+    except Exception:
         print("\n", traceback.format_exc())
         print("\nFailed to sync common dir from github\n\n")
         return "Failed to sync common dir from github"
