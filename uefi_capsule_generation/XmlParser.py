@@ -1,4 +1,3 @@
-
 # --------------------------------------------------------------------
 # Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -12,8 +11,8 @@ import traceback
 import re
 
 
-def print_all_level_d(d, indent = 0, log_file_obj = None):
-    '''
+def print_all_level_d(d, indent=0, log_file_obj=None):
+    """
     About:
         Function to print in console, a nested dict with indentation for easy reading
         For debugging
@@ -24,7 +23,7 @@ def print_all_level_d(d, indent = 0, log_file_obj = None):
 
     Return:
         None
-    '''
+    """
     if not d:
         return
     if isinstance(d, list):
@@ -56,14 +55,17 @@ def print_all_level_d(d, indent = 0, log_file_obj = None):
         return
 
     for x in d:
-
-        if isinstance(d[x], OrderedDict) or isinstance(d[x], dict) or isinstance(d[x], list):
+        if (
+            isinstance(d[x], OrderedDict)
+            or isinstance(d[x], dict)
+            or isinstance(d[x], list)
+        ):
             s = ""
             for i in range(indent):
                 print(" ", end="")
                 s += " "
             print(x + " : ")
-            print_all_level_d(d[x], indent+4, log_file_obj)
+            print_all_level_d(d[x], indent + 4, log_file_obj)
 
         else:
             s = ""
@@ -99,17 +101,13 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
         tree = ET.parse(s_xml_file)
         root = tree.getroot()
 
-
-
     except Exception:
         print(traceback.format_exc())
         return False
 
     result_dict = xml_to_dict(root)
 
-
     # print_all_level_d(result_dict)
-
 
     # print("\n\n\nin custom code:")
     if isinstance(result_dict["FwEntry"], OrderedDict):
@@ -128,12 +126,13 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
         raw_fw_item.UpdatePath.PartitionTypeGUID = fw_entry["Dest"]["PartitionTypeGUID"]
         raw_fw_item.BackupPath.DiskType = fw_entry["Backup"]["DiskType"]
         raw_fw_item.BackupPath.PartitionName = fw_entry["Backup"]["PartitionName"]
-        raw_fw_item.BackupPath.PartitionTypeGUID = fw_entry["Backup"]["PartitionTypeGUID"]
+        raw_fw_item.BackupPath.PartitionTypeGUID = fw_entry["Backup"][
+            "PartitionTypeGUID"
+        ]
 
         g_dynamic_var.XmlRawFwEntryList.append(raw_fw_item)
 
     # print("\n\n\n*******************\n")
-
 
     metadata_items = root.findall(".//Metadata")
 
@@ -164,7 +163,9 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
             return False
 
         if not re.match("^[0-9]+$", s_brk_chg_num):
-            print("ERROR: Invalid BreakingChangeNumber in the XML file. BreakingChangeNumber should only contain numbers.")
+            print(
+                "ERROR: Invalid BreakingChangeNumber in the XML file. BreakingChangeNumber should only contain numbers."
+            )
             return False
         else:
             s_breaking_change_number = s_brk_chg_num
@@ -174,9 +175,13 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
             return False
 
         if s_flash_type_in.upper() not in g_dynamic_var.dFlashTypeByString:
-            print("ERROR: Invalid FlashType in the XML file. FlashType should only be UFS or EMMC.")
+            print(
+                "ERROR: Invalid FlashType in the XML file. FlashType should only be UFS or EMMC."
+            )
             return False
         else:
-            g_dynamic_var.DeviceFlashType = g_dynamic_var.dFlashTypeByString[s_flash_type_in.upper()]
+            g_dynamic_var.DeviceFlashType = g_dynamic_var.dFlashTypeByString[
+                s_flash_type_in.upper()
+            ]
 
     return True

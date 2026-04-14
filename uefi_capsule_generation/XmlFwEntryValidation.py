@@ -1,4 +1,3 @@
-
 # --------------------------------------------------------------------
 # Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
@@ -22,7 +21,9 @@ def partition_fields_checking(raw_fwentry, raw_dev_path, meta_data_dev_path):
         print("Empty <PartitionName> tag is not allowed for partition operation")
         return False
     if raw_dev_path.PartitionTypeGUID is None:
-        print("Empty <PartitionTypeGuidName> tag is not allowed for partition operation")
+        print(
+            "Empty <PartitionTypeGuidName> tag is not allowed for partition operation"
+        )
         return False
     return True
 
@@ -35,7 +36,9 @@ def fat_fields_checking(raw_fwentry, raw_dev_path, meta_data_dev_path):
         print("Empty <DiskType> tag is not allowed for FAT file operation")
         return False
     if raw_dev_path.PartitionName is None and raw_dev_path.PartitionTypeGUID is None:
-        print("Enter <PartitionName> or <PartitionTypeGUID> is required for FAT file operation")
+        print(
+            "Enter <PartitionName> or <PartitionTypeGUID> is required for FAT file operation"
+        )
         return False
     if raw_dev_path.FileName is None:
         print("Empty <FileName> tag is not allowed for FAT file operation")
@@ -58,7 +61,9 @@ def delete_fat_fields_checking(raw_fwentry, raw_dev_path, meta_data_dev_path):
         print("Empty <DiskType> tag is not allowed for FAT file operation")
         return False
     if raw_dev_path.PartitionName is None and raw_dev_path.PartitionTypeGUID is None:
-        print("Empty <PartitionName> or <PartitionTypeGUID> is not allowed for FAT file operation")
+        print(
+            "Empty <PartitionName> or <PartitionTypeGUID> is not allowed for FAT file operation"
+        )
         return False
     if raw_dev_path.FileName is None:
         print("Empty <FileName> tag is not allowed for FAT file operation")
@@ -93,7 +98,9 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
     # Operation
     if raw_fwentry.Operation:
         if raw_fwentry.Operation.upper() in g_dynamic_var.dOperationTypeByString:
-            meta_data_fwentry.Operation = g_dynamic_var.dOperationTypeByString[raw_fwentry.Operation.upper()]
+            meta_data_fwentry.Operation = g_dynamic_var.dOperationTypeByString[
+                raw_fwentry.Operation.upper()
+            ]
         else:
             print(f"Operation {raw_fwentry.Operation} is not recognized")
             return False
@@ -101,7 +108,9 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
     # UpdateType
     if raw_fwentry.UpdateType:
         if raw_fwentry.UpdateType.upper() in g_dynamic_var.dUpdateTypeByString:
-            meta_data_fwentry.UpdateType = g_dynamic_var.dUpdateTypeByString[raw_fwentry.UpdateType.upper()]
+            meta_data_fwentry.UpdateType = g_dynamic_var.dUpdateTypeByString[
+                raw_fwentry.UpdateType.upper()
+            ]
             if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.FAT_FILE:
                 print("ERROR: <UpdateType> is not supported for FAT_FILE")
                 return False
@@ -116,7 +125,9 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             return False
 
         if raw_fwentry.BackupType.upper() in g_dynamic_var.dBackupTypeByString:
-            meta_data_fwentry.BackupType = g_dynamic_var.dBackupTypeByString[raw_fwentry.BackupType.upper()]
+            meta_data_fwentry.BackupType = g_dynamic_var.dBackupTypeByString[
+                raw_fwentry.BackupType.upper()
+            ]
             if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.FAT_FILE:
                 print("ERROR: <BackupType> is not supported for FAT_FILE")
                 return False
@@ -128,8 +139,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
     if g_dynamic_var.isMatchIdentifierInXML:
         meta_data_fwentry.Revision = FVC.SYS_FW_METADATA_REVISION
         if raw_fwentry.MatchIdentifier:
-            if len(raw_fwentry.MatchIdentifier) > FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE:
-                print(f"Error: More than {FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE} characters found in <MatchIdentifier>")
+            if (
+                len(raw_fwentry.MatchIdentifier)
+                > FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE
+            ):
+                print(
+                    f"Error: More than {FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE} characters found in <MatchIdentifier>"
+                )
                 return False
             meta_data_fwentry.MatchIdentifier = raw_fwentry.MatchIdentifier
 
@@ -140,9 +156,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             return False
 
         if raw_fwentry.UpdatePath.DiskType.upper() in g_dynamic_var.dDiskTypeByString:
-            meta_data_fwentry.UpdatePath.DiskType = g_dynamic_var.dDiskTypeByString[raw_fwentry.UpdatePath.DiskType.upper()]
+            meta_data_fwentry.UpdatePath.DiskType = g_dynamic_var.dDiskTypeByString[
+                raw_fwentry.UpdatePath.DiskType.upper()
+            ]
         else:
-            print(f"Dest <DiskType> {raw_fwentry.UpdatePath.DiskType} is not recognized")
+            print(
+                f"Dest <DiskType> {raw_fwentry.UpdatePath.DiskType} is not recognized"
+            )
             return False
 
     # Dest PartitionName
@@ -150,13 +170,25 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
         if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.FWCLASS_GUID:
             print("ERROR: <Dest> is not supported for UPDATE_FWCLASS_GUID")
             return False
-        if len(raw_fwentry.UpdatePath.PartitionName) > FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE:
-            print(f"Error: More than {FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE} characters found in <PartitionName>")
+        if (
+            len(raw_fwentry.UpdatePath.PartitionName)
+            > FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE
+        ):
+            print(
+                f"Error: More than {FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE} characters found in <PartitionName>"
+            )
             return False
-        if raw_fwentry.UpdatePath.PartitionName == FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION:
-            print(f"Error: Partition name {FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION} is not allowed, Otherwise version conflict will occur when different binary is used")
+        if (
+            raw_fwentry.UpdatePath.PartitionName
+            == FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION
+        ):
+            print(
+                f"Error: Partition name {FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION} is not allowed, Otherwise version conflict will occur when different binary is used"
+            )
             return False
-        meta_data_fwentry.UpdatePath.PartitionName[:len(raw_fwentry.UpdatePath.PartitionName)] = bytearray(raw_fwentry.UpdatePath.PartitionName, 'utf-8')
+        meta_data_fwentry.UpdatePath.PartitionName[
+            : len(raw_fwentry.UpdatePath.PartitionName)
+        ] = bytearray(raw_fwentry.UpdatePath.PartitionName, "utf-8")
 
     # Dest PartitionTypeGuid
     if raw_fwentry.UpdatePath.PartitionTypeGUID:
@@ -164,11 +196,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             print("ERROR: <Dest> is not supported for UPDATE_FWCLASS_GUID")
             return False
 
-        s_temp = raw_fwentry.UpdatePath.PartitionTypeGUID.strip('{}')
+        s_temp = raw_fwentry.UpdatePath.PartitionTypeGUID.strip("{}")
         if s_temp:
             try:
                 uuid_obj = uuid.UUID(s_temp)
-                meta_data_fwentry.UpdatePath.PartitionTypeGUID = (ctypes.c_byte * 16)(*uuid_obj.bytes)
+                meta_data_fwentry.UpdatePath.PartitionTypeGUID = (ctypes.c_byte * 16)(
+                    *uuid_obj.bytes
+                )
 
             except ValueError as e:
                 print(f"ERROR: Failure creating partitionTypeGuid(error: {e}).\n")
@@ -180,8 +214,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             print("ERROR: <Dest> is not supported for UPDATE_FWCLASS_GUID")
             return False
 
-        if len(raw_fwentry.UpdatePath.FileName) > FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE:
-            print(f"Error: More than {FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE} characters found in <FileName>")
+        if (
+            len(raw_fwentry.UpdatePath.FileName)
+            > FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE
+        ):
+            print(
+                f"Error: More than {FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE} characters found in <FileName>"
+            )
             return False
         meta_data_fwentry.UpdatePath.FileName = raw_fwentry.UpdatePath.FileName
 
@@ -192,9 +231,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             return False
 
         if raw_fwentry.BackupPath.DiskType.upper() in g_dynamic_var.dDiskTypeByString:
-            meta_data_fwentry.BackupPath.DiskType = g_dynamic_var.dDiskTypeByString[raw_fwentry.BackupPath.DiskType.upper()]
+            meta_data_fwentry.BackupPath.DiskType = g_dynamic_var.dDiskTypeByString[
+                raw_fwentry.BackupPath.DiskType.upper()
+            ]
         else:
-            print(f"Dest <DiskType> {raw_fwentry.BackupPath.DiskType} is not recognized")
+            print(
+                f"Dest <DiskType> {raw_fwentry.BackupPath.DiskType} is not recognized"
+            )
             return False
 
     # Backup PartitionName
@@ -203,13 +246,25 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             print("ERROR: <Backup> is not supported for UPDATE_FWCLASS_GUID")
             return False
 
-        if len(raw_fwentry.BackupPath.PartitionName) > FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE:
-            print(f"Error: More than {FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE} characters found in <PartitionName>")
+        if (
+            len(raw_fwentry.BackupPath.PartitionName)
+            > FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE
+        ):
+            print(
+                f"Error: More than {FVC_h.GlobalStaticVariable.PARTITION_NAME_MAX_SIZE} characters found in <PartitionName>"
+            )
             return False
-        if raw_fwentry.BackupPath.PartitionName == FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION:
-            print(f"Error: Partition name {FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION} is not allowed, Otherwise version conflict will occur when different binary is used")
+        if (
+            raw_fwentry.BackupPath.PartitionName
+            == FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION
+        ):
+            print(
+                f"Error: Partition name {FVC_h.GlobalStaticVariable.PARTITION_NAME_SYSFW_VERSION} is not allowed, Otherwise version conflict will occur when different binary is used"
+            )
             return False
-        meta_data_fwentry.BackupPath.PartitionName[:len(raw_fwentry.BackupPath.PartitionName)] = bytearray(raw_fwentry.BackupPath.PartitionName, 'utf-8')
+        meta_data_fwentry.BackupPath.PartitionName[
+            : len(raw_fwentry.BackupPath.PartitionName)
+        ] = bytearray(raw_fwentry.BackupPath.PartitionName, "utf-8")
 
     # Backup PartitionTypeGuid
     if raw_fwentry.BackupPath.PartitionTypeGUID:
@@ -217,11 +272,13 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             print("ERROR: <Backup> is not supported for UPDATE_FWCLASS_GUID")
             return False
 
-        s_temp = raw_fwentry.BackupPath.PartitionTypeGUID.strip('{}')
+        s_temp = raw_fwentry.BackupPath.PartitionTypeGUID.strip("{}")
         if s_temp:
             try:
                 uuid_obj = uuid.UUID(s_temp)
-                meta_data_fwentry.BackupPath.PartitionTypeGUID = (ctypes.c_byte * 16)(*uuid_obj.bytes)
+                meta_data_fwentry.BackupPath.PartitionTypeGUID = (ctypes.c_byte * 16)(
+                    *uuid_obj.bytes
+                )
             except ValueError as e:
                 print(f"ERROR: Failure creating partitionTypeGuid(error: {e}).\n")
                 return False
@@ -232,13 +289,17 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
             print("ERROR: <Backup> is not supported for UPDATE_FWCLASS_GUID")
             return False
 
-        if len(raw_fwentry.BackupPath.FileName) > FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE:
-            print(f"Error: More than {FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE} characters found in <FileName>")
+        if (
+            len(raw_fwentry.BackupPath.FileName)
+            > FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE
+        ):
+            print(
+                f"Error: More than {FVC_h.GlobalStaticVariable.FILE_NAME_MAX_SIZE} characters found in <FileName>"
+            )
             return False
         meta_data_fwentry.BackupPath.FileName = raw_fwentry.BackupPath.FileName
 
     return True
-
 
 
 def assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var):
@@ -246,9 +307,18 @@ def assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var)
     if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.FAT_FILE:
         return False
 
-    if (meta_data_fwentry.UpdateType in [FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM, FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM, FVC_h.FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY]):
-        if raw_fwentry.UpdatePath.FileName.upper() in g_dynamic_var.dFileGuidByDestDppItemFile:
-            s_temp_guid1 = g_dynamic_var.dFileGuidByDestDppItemFile[raw_fwentry.UpdatePath.FileName.upper()].strip('{}')
+    if meta_data_fwentry.UpdateType in [
+        FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM,
+        FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM,
+        FVC_h.FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY,
+    ]:
+        if (
+            raw_fwentry.UpdatePath.FileName.upper()
+            in g_dynamic_var.dFileGuidByDestDppItemFile
+        ):
+            s_temp_guid1 = g_dynamic_var.dFileGuidByDestDppItemFile[
+                raw_fwentry.UpdatePath.FileName.upper()
+            ].strip("{}")
             raw_fwentry.FileGuid = s_temp_guid1
             try:
                 meta_data_fwentry.FileGuid = uuid.UUID(s_temp_guid1)
@@ -268,12 +338,19 @@ def assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var)
     raw_fwentry.FileGuid = meta_data_fwentry.FileGuid
     return True
 
+
 def fw_entry_fields_combination_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var):
     if meta_data_fwentry.Operation == FVC_h.FWENTRY_OPERATION_TYPE.UPDATE:
         if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.PARTITION:
-            if partition_fields_checking(raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath):
+            if partition_fields_checking(
+                raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath
+            ):
                 if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.PARTITION:
-                    if partition_fields_checking(raw_fwentry, raw_fwentry.BackupPath, meta_data_fwentry.BackupPath):
+                    if partition_fields_checking(
+                        raw_fwentry,
+                        raw_fwentry.BackupPath,
+                        meta_data_fwentry.BackupPath,
+                    ):
                         print("Firmware entry validated\n")
                         return True
                     print("BackupPath partition validation failed")
@@ -291,12 +368,21 @@ def fw_entry_fields_combination_checking(raw_fwentry, meta_data_fwentry, g_dynam
         if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.FAT_FILE:
             return False
 
-        if meta_data_fwentry.UpdateType in [FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM, FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM]:
-            if dpp_fields_checking(raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath):
+        if meta_data_fwentry.UpdateType in [
+            FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM,
+            FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM,
+        ]:
+            if dpp_fields_checking(
+                raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath
+            ):
                 if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.FAT_FILE:
                     return False
                 if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.PARTITION:
-                    if partition_fields_checking(raw_fwentry, raw_fwentry.BackupPath, meta_data_fwentry.BackupPath):
+                    if partition_fields_checking(
+                        raw_fwentry,
+                        raw_fwentry.BackupPath,
+                        meta_data_fwentry.BackupPath,
+                    ):
                         print("Firmware entry validated\n")
                         return True
                     return False
@@ -304,11 +390,17 @@ def fw_entry_fields_combination_checking(raw_fwentry, meta_data_fwentry, g_dynam
             return False
 
         if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY:
-            if dpp_fields_checking(raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath):
+            if dpp_fields_checking(
+                raw_fwentry, raw_fwentry.UpdatePath, meta_data_fwentry.UpdatePath
+            ):
                 if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.FAT_FILE:
                     return False
                 if meta_data_fwentry.BackupType == FVC_h.FWENTRY_BACKUP_TYPE.PARTITION:
-                    if partition_fields_checking(raw_fwentry, raw_fwentry.BackupPath, meta_data_fwentry.BackupPath):
+                    if partition_fields_checking(
+                        raw_fwentry,
+                        raw_fwentry.BackupPath,
+                        meta_data_fwentry.BackupPath,
+                    ):
                         print("Firmware entry validated\n")
                         return True
                     return False
@@ -326,7 +418,9 @@ def fw_entry_fields_combination_checking(raw_fwentry, meta_data_fwentry, g_dynam
 def fw_entry_validation(raw_fwentry, meta_data_fwentry, g_dynamic_var):
     print("Validating firmware entry...")
     print("============================")
-    print(f"               <FlashType>         = {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]}")
+    print(
+        f"               <FlashType>         = {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]}"
+    )
     print(f"               <InputBinary>       = {raw_fwentry.InputBinary}")
     print(f"               <Operation>         = {raw_fwentry.Operation}")
     print(f"               <UpdateType>        = {raw_fwentry.UpdateType}")
@@ -334,22 +428,34 @@ def fw_entry_validation(raw_fwentry, meta_data_fwentry, g_dynamic_var):
     if raw_fwentry.MatchIdentifier:
         print(f"               <MatchIdentifier>   = {raw_fwentry.MatchIdentifier}")
     print(f"    DestPath   <DiskType>          = {raw_fwentry.UpdatePath.DiskType}")
-    print(f"    DestPath   <PartitionName>     = {raw_fwentry.UpdatePath.PartitionName}")
-    print(f"    DestPath   <PartitionTypeGuid> = {raw_fwentry.UpdatePath.PartitionTypeGUID}")
+    print(
+        f"    DestPath   <PartitionName>     = {raw_fwentry.UpdatePath.PartitionName}"
+    )
+    print(
+        f"    DestPath   <PartitionTypeGuid> = {raw_fwentry.UpdatePath.PartitionTypeGUID}"
+    )
     print(f"    DestPath   <FileName>          = {raw_fwentry.UpdatePath.FileName}")
     print("\n")
     print(f"    BackupPath <DiskType>          = {raw_fwentry.BackupPath.DiskType}")
-    print(f"    BackupPath <PartitionName>     = {raw_fwentry.BackupPath.PartitionName}")
-    print(f"    BackupPath <PartitionTypeGuid> = {raw_fwentry.BackupPath.PartitionTypeGUID}")
+    print(
+        f"    BackupPath <PartitionName>     = {raw_fwentry.BackupPath.PartitionName}"
+    )
+    print(
+        f"    BackupPath <PartitionTypeGuid> = {raw_fwentry.BackupPath.PartitionTypeGUID}"
+    )
     print(f"    BackupPath <FileName>          = {raw_fwentry.BackupPath.FileName}")
 
-    if not fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var):
+    if not fw_entry_fields_value_checking(
+        raw_fwentry, meta_data_fwentry, g_dynamic_var
+    ):
         return False
 
     if not assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var):
         return False
 
-    if not fw_entry_fields_combination_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var):
+    if not fw_entry_fields_combination_checking(
+        raw_fwentry, meta_data_fwentry, g_dynamic_var
+    ):
         return False
 
     return True
@@ -365,7 +471,9 @@ def fw_entry_list_validation_main(g_dynamic_var):
         m_fw_entry.UpdatePath = FVC_h.FWENTRY_DEVICE_PATH(0x0)
         m_fw_entry.BackupPath = FVC_h.FWENTRY_DEVICE_PATH(0x0)
         if g_dynamic_var.isMatchIdentifierInXML:
-            m_fw_entry.MatchIdentifier = ['\0'] * FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE
+            m_fw_entry.MatchIdentifier = [
+                "\0"
+            ] * FVC_h.GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE
 
         if fw_entry_validation(raw_fw_entry_temp, m_fw_entry, g_dynamic_var):
             if m_fw_entry.Operation != FVC_h.FWENTRY_OPERATION_TYPE.IGNORE:
@@ -380,13 +488,31 @@ def fw_entry_list_validation_main(g_dynamic_var):
     for i in range(len(g_dynamic_var.QpayloadFwEntryList)):
         m_fw_entry = g_dynamic_var.QpayloadFwEntryList[i]
         if m_fw_entry.UpdateType != FVC_h.FWENTRY_UPDATE_TYPE.FWCLASS_GUID:
-            if (m_fw_entry.UpdateType not in [FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM, FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM, FVC_h.FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY]):
-                if g_dynamic_var.DeviceFlashType not in g_dynamic_var.dFlashTypeByDiskType[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.UpdatePath.DiskType)]:
-                    print(f"ERROR1: DiskType {g_dynamic_var.dDiskTypeByValue[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.UpdatePath.DiskType)]} can't be used on a {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]} device.")
+            if m_fw_entry.UpdateType not in [
+                FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM,
+                FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM,
+                FVC_h.FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY,
+            ]:
+                if (
+                    g_dynamic_var.DeviceFlashType
+                    not in g_dynamic_var.dFlashTypeByDiskType[
+                        FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.UpdatePath.DiskType)
+                    ]
+                ):
+                    print(
+                        f"ERROR1: DiskType {g_dynamic_var.dDiskTypeByValue[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.UpdatePath.DiskType)]} can't be used on a {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]} device."
+                    )
                     return False
 
-            if g_dynamic_var.DeviceFlashType not in g_dynamic_var.dFlashTypeByDiskType[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.BackupPath.DiskType)]:
-                print(f"ERROR2: DiskType {g_dynamic_var.dDiskTypeByValue[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.BackupPath.DiskType)]} can't be used on a {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]} device.")
+            if (
+                g_dynamic_var.DeviceFlashType
+                not in g_dynamic_var.dFlashTypeByDiskType[
+                    FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.BackupPath.DiskType)
+                ]
+            ):
+                print(
+                    f"ERROR2: DiskType {g_dynamic_var.dDiskTypeByValue[FVC_h.FWENTRY_DISK_TYPE(m_fw_entry.BackupPath.DiskType)]} can't be used on a {g_dynamic_var.dFlashTypeByValue[g_dynamic_var.DeviceFlashType]} device."
+                )
                 return False
 
     # QCOM Dpp Item Name exclusive checking
@@ -395,14 +521,16 @@ def fw_entry_list_validation_main(g_dynamic_var):
         m_fw_entry_base = g_dynamic_var.QpayloadFwEntryList[i]
 
         if m_fw_entry_base.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM:
-            base_file_name = ''.join(m_fw_entry_base.UpdatePath.FileName)
+            base_file_name = "".join(m_fw_entry_base.UpdatePath.FileName)
 
             for j in range(i + 1, len(g_dynamic_var.QpayloadFwEntryList)):
                 m_fw_entry_target = g_dynamic_var.QpayloadFwEntryList[j]
                 if m_fw_entry_target.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.DPP_QCOM:
-                    target_file_name = ''.join(m_fw_entry_target.UpdatePath.FileName)
+                    target_file_name = "".join(m_fw_entry_target.UpdatePath.FileName)
                     if base_file_name == target_file_name:
-                        print("ERROR: duplicated QCOM type DPP items found in the list.")
+                        print(
+                            "ERROR: duplicated QCOM type DPP items found in the list."
+                        )
                         return False
 
     # OEM Dpp Item Name exclusive checking
@@ -411,12 +539,12 @@ def fw_entry_list_validation_main(g_dynamic_var):
         m_fw_entry_base = g_dynamic_var.QpayloadFwEntryList[i]
 
         if m_fw_entry_base.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM:
-            base_file_name = ''.join(m_fw_entry_base.UpdatePath.FileName)
+            base_file_name = "".join(m_fw_entry_base.UpdatePath.FileName)
 
             for j in range(i + 1, len(g_dynamic_var.QpayloadFwEntryList)):
                 m_fw_entry_target = g_dynamic_var.QpayloadFwEntryList[j]
                 if m_fw_entry_target.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.DPP_OEM:
-                    target_file_name = ''.join(m_fw_entry_target.UpdatePath.FileName)
+                    target_file_name = "".join(m_fw_entry_target.UpdatePath.FileName)
                     if base_file_name == target_file_name:
                         print("ERROR: duplicated OEM type DPP items found in the list.")
                         return False
@@ -427,74 +555,138 @@ def fw_entry_list_validation_main(g_dynamic_var):
         m_fw_entry_base = g_dynamic_var.QpayloadFwEntryList[i]
 
         if m_fw_entry_base.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.PARTITION:
-            base_update_part_name = ''.join(chr(b) for b in m_fw_entry_base.UpdatePath.PartitionName)
-            base_backup_part_name = ''.join(chr(b) for b in m_fw_entry_base.BackupPath.PartitionName)
+            base_update_part_name = "".join(
+                chr(b) for b in m_fw_entry_base.UpdatePath.PartitionName
+            )
+            base_backup_part_name = "".join(
+                chr(b) for b in m_fw_entry_base.BackupPath.PartitionName
+            )
 
             # Case 1: BaseFwEntry's updatePath VS BaseFwEntry's BackupPath.
-            if (m_fw_entry_base.UpdatePath.DiskType == m_fw_entry_base.BackupPath.DiskType and
-                m_fw_entry_base.UpdatePath.PartitionTypeGUID == m_fw_entry_base.BackupPath.PartitionTypeGUID and
-                base_update_part_name == base_backup_part_name):
-                print("ERROR: same partition update path and backup path found in the same entry.")
+            if (
+                m_fw_entry_base.UpdatePath.DiskType
+                == m_fw_entry_base.BackupPath.DiskType
+                and m_fw_entry_base.UpdatePath.PartitionTypeGUID
+                == m_fw_entry_base.BackupPath.PartitionTypeGUID
+                and base_update_part_name == base_backup_part_name
+            ):
+                print(
+                    "ERROR: same partition update path and backup path found in the same entry."
+                )
                 return False
 
             for j in range(i + 1, len(g_dynamic_var.QpayloadFwEntryList)):
                 m_fw_entry_target = g_dynamic_var.QpayloadFwEntryList[j]
                 if m_fw_entry_target.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.PARTITION:
-                    target_update_part_name = ''.join(chr(b) for b in m_fw_entry_target.UpdatePath.PartitionName)
-                    target_backup_part_name = ''.join(chr(b) for b in m_fw_entry_target.BackupPath.PartitionName)
+                    target_update_part_name = "".join(
+                        chr(b) for b in m_fw_entry_target.UpdatePath.PartitionName
+                    )
+                    target_backup_part_name = "".join(
+                        chr(b) for b in m_fw_entry_target.BackupPath.PartitionName
+                    )
 
                     if g_dynamic_var.isMatchIdentifierInXML:
                         if any(m_fw_entry_base.MatchIdentifier):
-                            base_match_identifier = ''.join(m_fw_entry_base.MatchIdentifier)
+                            base_match_identifier = "".join(
+                                m_fw_entry_base.MatchIdentifier
+                            )
                         if any(m_fw_entry_target.MatchIdentifier):
-                            target_match_identifier = ''.join(m_fw_entry_target.MatchIdentifier)
+                            target_match_identifier = "".join(
+                                m_fw_entry_target.MatchIdentifier
+                            )
 
                     # Case 2: BaseFwEntry's updatePath VS TargetFwEntry's UpdatePath
-                    if (m_fw_entry_base.UpdatePath.DiskType == m_fw_entry_target.UpdatePath.DiskType and
-                        m_fw_entry_base.UpdatePath.PartitionTypeGUID == m_fw_entry_target.UpdatePath.PartitionTypeGUID and
-                        base_update_part_name == target_update_part_name):
+                    if (
+                        m_fw_entry_base.UpdatePath.DiskType
+                        == m_fw_entry_target.UpdatePath.DiskType
+                        and m_fw_entry_base.UpdatePath.PartitionTypeGUID
+                        == m_fw_entry_target.UpdatePath.PartitionTypeGUID
+                        and base_update_part_name == target_update_part_name
+                    ):
                         if not base_match_identifier or not target_match_identifier:
-                            print("ERROR: same partition update path found in the list.")
+                            print(
+                                "ERROR: same partition update path found in the list."
+                            )
                             return False
                         elif base_match_identifier == target_match_identifier:
-                            print("ERROR: same partition update path with same match identifier found in the list.")
+                            print(
+                                "ERROR: same partition update path with same match identifier found in the list."
+                            )
                             return False
                         elif base_match_identifier != target_match_identifier:
-                            xml_entry_base = find_xml_raw_fw_entry_node(m_fw_entry_base, g_dynamic_var)
-                            xml_entry_target = find_xml_raw_fw_entry_node(m_fw_entry_target, g_dynamic_var)
-                            if xml_entry_base.InputBinary == xml_entry_target.InputBinary:
-                                print("ERROR: same partition update path with same input binary found in the list.")
+                            xml_entry_base = find_xml_raw_fw_entry_node(
+                                m_fw_entry_base, g_dynamic_var
+                            )
+                            xml_entry_target = find_xml_raw_fw_entry_node(
+                                m_fw_entry_target, g_dynamic_var
+                            )
+                            if (
+                                xml_entry_base.InputBinary
+                                == xml_entry_target.InputBinary
+                            ):
+                                print(
+                                    "ERROR: same partition update path with same input binary found in the list."
+                                )
                                 return False
 
                     # Case 3: BaseFwEntry's updatePath VS TargetFwEntry's BackupPath
-                    if (m_fw_entry_base.UpdatePath.DiskType == m_fw_entry_target.BackupPath.DiskType and
-                        m_fw_entry_base.UpdatePath.PartitionTypeGUID == m_fw_entry_target.BackupPath.PartitionTypeGUID and
-                        base_update_part_name == target_backup_part_name):
-                        print("ERROR: same partition update path and backup path found in the list.")
+                    if (
+                        m_fw_entry_base.UpdatePath.DiskType
+                        == m_fw_entry_target.BackupPath.DiskType
+                        and m_fw_entry_base.UpdatePath.PartitionTypeGUID
+                        == m_fw_entry_target.BackupPath.PartitionTypeGUID
+                        and base_update_part_name == target_backup_part_name
+                    ):
+                        print(
+                            "ERROR: same partition update path and backup path found in the list."
+                        )
                         return False
 
                     # Case 4: BaseFwEntry's BackupPath VS TargetFwEntry's UpdatePath
-                    if (m_fw_entry_base.BackupPath.DiskType == m_fw_entry_target.UpdatePath.DiskType and
-                        m_fw_entry_base.BackupPath.PartitionTypeGUID == m_fw_entry_target.UpdatePath.PartitionTypeGUID and
-                        base_backup_part_name == target_update_part_name):
-                        print("ERROR: same partition update path and backup path found in the list.")
+                    if (
+                        m_fw_entry_base.BackupPath.DiskType
+                        == m_fw_entry_target.UpdatePath.DiskType
+                        and m_fw_entry_base.BackupPath.PartitionTypeGUID
+                        == m_fw_entry_target.UpdatePath.PartitionTypeGUID
+                        and base_backup_part_name == target_update_part_name
+                    ):
+                        print(
+                            "ERROR: same partition update path and backup path found in the list."
+                        )
                         return False
 
                     # Case 5: BaseFwEntry's BackupPath VS TargetFwEntry's BackupPath
-                    if (m_fw_entry_base.BackupPath.DiskType == m_fw_entry_target.BackupPath.DiskType and
-                        m_fw_entry_base.BackupPath.PartitionTypeGUID == m_fw_entry_target.BackupPath.PartitionTypeGUID and
-                        base_backup_part_name == target_backup_part_name):
+                    if (
+                        m_fw_entry_base.BackupPath.DiskType
+                        == m_fw_entry_target.BackupPath.DiskType
+                        and m_fw_entry_base.BackupPath.PartitionTypeGUID
+                        == m_fw_entry_target.BackupPath.PartitionTypeGUID
+                        and base_backup_part_name == target_backup_part_name
+                    ):
                         if not base_match_identifier or not target_match_identifier:
-                            print("ERROR: same partition backup path found in the list.")
+                            print(
+                                "ERROR: same partition backup path found in the list."
+                            )
                             return False
                         elif base_match_identifier == target_match_identifier:
-                            print("ERROR: same partition backup path with same match identifier found in the list.")
+                            print(
+                                "ERROR: same partition backup path with same match identifier found in the list."
+                            )
                             return False
                         elif base_match_identifier != target_match_identifier:
-                            xml_entry_base = find_xml_raw_fw_entry_node(m_fw_entry_base, g_dynamic_var)
-                            xml_entry_target = find_xml_raw_fw_entry_node(m_fw_entry_target, g_dynamic_var)
-                            if xml_entry_base.InputBinary == xml_entry_target.InputBinary:
-                                print("ERROR: same partition backup path with same input binary found in the list.")
+                            xml_entry_base = find_xml_raw_fw_entry_node(
+                                m_fw_entry_base, g_dynamic_var
+                            )
+                            xml_entry_target = find_xml_raw_fw_entry_node(
+                                m_fw_entry_target, g_dynamic_var
+                            )
+                            if (
+                                xml_entry_base.InputBinary
+                                == xml_entry_target.InputBinary
+                            ):
+                                print(
+                                    "ERROR: same partition backup path with same input binary found in the list."
+                                )
                                 return False
 
     # Fat device path exclusive checking
