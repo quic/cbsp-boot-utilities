@@ -135,7 +135,7 @@ class FWENTRY_DEVICE_PATH(ctypes.Structure):
         self.DiskType = pType
         self.PartitionName = (ctypes.c_byte * (2 * GlobalStaticVariable.PARTITION_NAME_MAX_SIZE))()
         self.PartitionTypeGUID = (ctypes.c_byte * 16).from_buffer_copy(uuid.UUID(int=0).bytes)
-        self.FileName = (ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE))()        
+        self.FileName = (ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE))()
 
     def copy_from(self, devPath):
         self.DiskType = devPath.DiskType
@@ -176,7 +176,7 @@ class QPAYLOAD_METADATA_FWENTRY(ctypes.Structure):
         ("BackupType", ctypes.c_uint32),
         ("UpdatePath", FWENTRY_DEVICE_PATH),
         ("BackupPath", FWENTRY_DEVICE_PATH),
-        ("Revision", ctypes.c_uint32),  
+        ("Revision", ctypes.c_uint32),
         ("MatchIdentifier", ctypes.c_char * (2 * GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE))
     ]
 
@@ -385,5 +385,5 @@ class GlobalDynamicVariable:
 
     XmlRawFwEntryList = deque()
     QpayloadFwEntryList = deque()
-    DeviceFlashType = None  
+    DeviceFlashType = None
     isMatchIdentifierInXML = False

@@ -14,7 +14,7 @@ import json
 import os
 import subprocess
 import sys
-from collections import OrderedDict 
+from collections import OrderedDict
 import platform
 import traceback
 
@@ -38,8 +38,8 @@ def ParseArguments():
 def create_config():
 
     config_json_data = OrderedDict()
-    Payloads_entry_dict = OrderedDict()        
-        
+    Payloads_entry_dict = OrderedDict()
+
     Payloads_entry_dict["Guid"] = ""
     Payloads_entry_dict["FwVersion"] = ""
     Payloads_entry_dict["LowestSupportedVersion"] = ""
@@ -51,7 +51,7 @@ def create_config():
     Payloads_entry_dict["OpenSslOtherPublicCertFile"] = ""
     Payloads_entry_dict["OpenSslTrustedPublicCertFile"] = ""
     Payloads_entry_dict["SigningToolPath"] = ""
-                                    
+
     config_json_data['Payloads'] = [Payloads_entry_dict]
 
     with open('config.json', 'w') as json_file:
@@ -75,7 +75,7 @@ def ExtractEcFwVersions(StringData, SubString):
         version = (FwVerSub << 16) | FwVerTest
         return ('0x{:08x}'.format(version))
 
-    except Exception as e:  
+    except Exception as e:
         print('Error occurred while extracting EC version: {0}.'.format(e))
         sys.exit(1)
 
@@ -99,7 +99,7 @@ def GetEcFirmwareInfo(args):
         print('EC Bin File does not exist: {0}.'.format(e))
         sys.exit(1)
 
-    except Exception as e:  
+    except Exception as e:
         print('Error occurred while reading from EC bin file: {0}.'.format(e))
         sys.exit(1)
 
@@ -112,8 +112,8 @@ def get_python_version():
         python_version_no = int(python_version_l[1].split('.')[0])
 
         if python_version_no == 3:
-            python_version = "python"        
-    except Exception: 
+            python_version = "python"
+    except Exception:
             print("'python --version' command failed to execute at command line")
 
     if python_version == None:
@@ -122,14 +122,14 @@ def get_python_version():
             python_version_op_l = output.split(' ')
             python_version_no = int(python_version_op_l[1].split('.')[0])
             if python_version_no == 3:
-                python_version = "python3"        
-        except Exception: 
+                python_version = "python3"
+        except Exception:
                 print("'python3 --version' command failed to execute at command line")
 
     if python_version == None:
         print("ERROR 'python --version' and python")
         return None
-    
+
     print("python_version: ", python_version)
 
     return python_version
@@ -150,8 +150,8 @@ def GetSysFirmwareInfo(args):
             if not os.path.exists(SysFwExePath):
                 print('SYSFW_VERSION_program.py not found at: {0}'.format(SysFwExePath))
                 sys.exit(1)
-            
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest 
+
+            # Call SysFwVersion.exe tool to extract the firmware version and lowest
             # supported version
             results = []
             for cmd in commands:
@@ -161,17 +161,17 @@ def GetSysFirmwareInfo(args):
                 except Exception as e:
                     print('Failed to execute command:{0}. Error: {1}'.format(cmd, (e)))
                     sys.exit(1)
-                
+
             (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
             print('Firmware Version is {0}, lowest supported version: {1}'.format(args.FwVersion, args.LowestSupportedVersion))
-        
+
         if platform.system() == "Windows":
             SysFwExePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'SYSFW_VERSION_program.py')
             if not os.path.exists(SysFwExePath):
                 print('SYSFW_VERSION_program.py not found at: {0}'.format(SysFwExePath))
                 sys.exit(1)
-            
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest 
+
+            # Call SysFwVersion.exe tool to extract the firmware version and lowest
             # supported version
             results = []
             for cmd in commands:
@@ -181,7 +181,7 @@ def GetSysFirmwareInfo(args):
                 except:
                     print('Failed to execute command:{0}. Error: {1}'.format(cmd, (e)))
                     print(traceback.format_exc())
-                
+
             (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
             print('Firmware Version is {0}, lowest supported version: {1}'.format(args.FwVersion, args.LowestSupportedVersion))
 
@@ -194,7 +194,7 @@ def GetSysFirmwareInfo(args):
         sys.exit(1)
 
 def UpdateJsonFile(args):
-    # Get the firmware version and lowest supported version by calling the 
+    # Get the firmware version and lowest supported version by calling the
     # ExtractEcFwVersions()/SysFwVersion.exe and add it to the args list
     FirmwareType   = args.FwType
     EcFwString  = 'EC_FW'
@@ -210,7 +210,7 @@ def UpdateJsonFile(args):
             print('Neither System nor EC FirmwareType: {0}'.format(FirmwareType))
             sys.exit(1)
 
-    except Exception as e:  
+    except Exception as e:
         print('Error occurred while reading from FirmwareType string: {0}.'.format(e))
         sys.exit(1)
 
@@ -225,20 +225,20 @@ def UpdateJsonFile(args):
 
     if not os.path.exists(JsonFilePath):
         print("%s Not found" % (JsonFile))
-    
+
     try:
         with open(JsonFile, 'r') as f:
             #loading the field values in json file without changing the order
-            data = json.load(f, object_pairs_hook=OrderedDict) 
-    except Exception as e:        
+            data = json.load(f, object_pairs_hook=OrderedDict)
+    except Exception as e:
         print('Exception while opening JsonFile: {0}.'.format(e))
         sys.exit(1)
-        
+
     exception_list = ['JsonFile', 'BinFile' , 'FwType']
 
     for i, payload in enumerate(data['Payloads']):
         for key, value in args.__dict__.items():
-            try:        
+            try:
                 if key in exception_list:
                     continue  # Skip the keys in the exception list
                 elif value and key in payload:
@@ -252,7 +252,7 @@ def UpdateJsonFile(args):
     try:
         with open(JsonFile, 'w') as f:
             json.dump(data, f, indent=4)
-    except Exception as e:  
+    except Exception as e:
         print('Error occurred while writing to the JSON file: {0}.'.format(e))
         sys.exit(1)
 
@@ -260,4 +260,3 @@ if __name__ == '__main__':
     args = ParseArguments()
     UpdateJsonFile(args)
 
-    
