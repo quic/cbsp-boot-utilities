@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
-import traceback
 import json
-import os
 from collections import OrderedDict
+
 
 def create_config():
 
@@ -25,7 +24,7 @@ def create_config():
     Payloads_entry_dict["OpenSslTrustedPublicCertFile"] = ""
     Payloads_entry_dict["SigningToolPath"] = ""
 
-    config_json_data['Payloads'] = [Payloads_entry_dict]
+    config_json_data["Payloads"] = [Payloads_entry_dict]
 
-    with open('config.json', 'w') as json_file:
+    with open("config.json", "w") as json_file:
         json.dump(config_json_data, json_file, indent=4)

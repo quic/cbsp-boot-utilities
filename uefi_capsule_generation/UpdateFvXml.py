@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
+import argparse
 import os
 import re
-import argparse
 import subprocess
-from xml.dom import minidom
 import sys
+from xml.dom import minidom
 
 REPO_URL = "https://github.com/qualcomm-linux/qcom-ptool.git"
 REPO_DIR = "qcom-ptool"
@@ -21,10 +21,12 @@ SUPPORTED_PLATFORMS = {
     "QCS615": "qcs615-adp-air",
 }
 
+
 def get_target_name(soc_name):
     for platform, target in SUPPORTED_PLATFORMS.items():
         if soc_name == platform:
             return target
+
 
 def safe_clone(repo_dir):
     if not os.path.exists(repo_dir):
@@ -34,22 +36,25 @@ def safe_clone(repo_dir):
             print(f"Error cloning repo: {e}")
             sys.exit(1)
 
+
 def read_partitions_conf(partition_conf_path):
     try:
-        with open(partition_conf_path, 'r') as f:
+        with open(partition_conf_path, "r") as f:
             return f.readlines()
     except FileNotFoundError:
         print(f"Error: {partition_conf_path} not found.")
         sys.exit(1)
 
+
 def detect_storage_type_from_conf(lines):
     for line in lines:
-        if re.search(r'--type=ufs', line, re.IGNORECASE):
+        if re.search(r"--type=ufs", line, re.IGNORECASE):
             return "UFS"
-        elif re.search(r'--type=emmc', line, re.IGNORECASE):
+        elif re.search(r"--type=emmc", line, re.IGNORECASE):
             return "EMMC"
     print("Error: Could not detect StorageType from partitions.conf.")
     sys.exit(1)
+
 
 def parse_partition_info(args, lines, storage_type):
     partition_info = {}
@@ -91,12 +96,14 @@ def parse_partition_info(args, lines, storage_type):
         partition_info[name] = entry
     return partition_info
 
+
 def find_base_names(partition_info):
     base_names = set()
     for name in partition_info:
         if name.endswith("_a") and name[:-2] + "_b" in partition_info:
             base_names.add(name[:-2])
     return base_names
+
 
 def create_xml(args, base_names, partition_info):
     doc = minidom.Document()
@@ -125,7 +132,7 @@ def create_xml(args, base_names, partition_info):
             ("InputPath", "Images"),
             ("Operation", "IGNORE"),
             ("UpdateType", "UPDATE_PARTITION"),
-            ("BackupType", "BACKUP_PARTITION")
+            ("BackupType", "BACKUP_PARTITION"),
         ]:
             elem = doc.createElement(tag)
             elem.appendChild(doc.createTextNode(text))
@@ -135,7 +142,7 @@ def create_xml(args, base_names, partition_info):
         for tag, text in [
             ("DiskType", disk_type),
             ("PartitionName", f"{base}_a"),
-            ("PartitionTypeGUID", part_a["guid"])
+            ("PartitionTypeGUID", part_a["guid"]),
         ]:
             elem = doc.createElement(tag)
             elem.appendChild(doc.createTextNode(text))
@@ -146,7 +153,7 @@ def create_xml(args, base_names, partition_info):
         for tag, text in [
             ("DiskType", disk_type),
             ("PartitionName", f"{base}_b"),
-            ("PartitionTypeGUID", part_b["guid"])
+            ("PartitionTypeGUID", part_b["guid"]),
         ]:
             elem = doc.createElement(tag)
             elem.appendChild(doc.createTextNode(text))
@@ -156,31 +163,52 @@ def create_xml(args, base_names, partition_info):
         fvitems.appendChild(fw_entry)
     return doc
 
+
 def write_xml(doc, output_file="FvUpdate.xml"):
     with open(output_file, "wb") as f:
         xml_str = doc.toprettyxml(indent="  ", encoding="utf-8")
         f.write(xml_str)
 
+
 def main():
-    parser = argparse.ArgumentParser(description="Generate FvUpdate.xml from partitions.conf")
-    custom_usage = "UpdateFvXml.py [-h] (-T TARGET & -S {UFS,EMMC}) | [-F PARTITIONS_CONF]"
+    parser = argparse.ArgumentParser(
+        description="Generate FvUpdate.xml from partitions.conf"
+    )
+    custom_usage = (
+        "UpdateFvXml.py [-h] (-T TARGET & -S {UFS,EMMC}) | [-F PARTITIONS_CONF]"
+    )
     parser = argparse.ArgumentParser(usage=custom_usage)
-    parser.add_argument('-T', metavar='TARGET', help='Target argument')
-    parser.add_argument("-S", "--StorageType", choices=["UFS", "EMMC"], help="Specify storage type: UFS or EMMC")
-    parser.add_argument('-F', metavar='PARTITIONS_CONF', help='Partitions config argument')
-    parser.add_argument('--ptool-path', dest='ptool_path', default=None,
-                        help='Path to an existing qcom-ptool directory; '
-                             'when provided, the repository is not cloned')
+    parser.add_argument("-T", metavar="TARGET", help="Target argument")
+    parser.add_argument(
+        "-S",
+        "--StorageType",
+        choices=["UFS", "EMMC"],
+        help="Specify storage type: UFS or EMMC",
+    )
+    parser.add_argument(
+        "-F", metavar="PARTITIONS_CONF", help="Partitions config argument"
+    )
+    parser.add_argument(
+        "--ptool-path",
+        dest="ptool_path",
+        default=None,
+        help="Path to an existing qcom-ptool directory; "
+        "when provided, the repository is not cloned",
+    )
     args = parser.parse_args()
 
     repo_dir = args.ptool_path if args.ptool_path else DEFAULT_REPO_DIR
 
     if args.F:
         if args.StorageType:
-            print("Error: Do not provide -S/--StorageType when using -F/--partitions_conf. It will be auto-detected.")
+            print(
+                "Error: Do not provide -S/--StorageType when using -F/--partitions_conf. It will be auto-detected."
+            )
             sys.exit(1)
         if args.T:
-            print("Error: Do not provide -T/--StorageType when using -F/--partitions_conf.")
+            print(
+                "Error: Do not provide -T/--StorageType when using -F/--partitions_conf."
+            )
             sys.exit(1)
         partition_conf_path = args.F
         lines = read_partitions_conf(partition_conf_path)
@@ -193,9 +221,11 @@ def main():
             safe_clone(repo_dir)
         target = get_target_name(args.T)
         if not target:
-            print(f"Provided target is Unknown !!! Please re-check")
+            print("Provided target is Unknown !!! Please re-check")
             sys.exit(1)
-        partition_conf_path = os.path.join(repo_dir, "platforms", target, "ufs", "partitions.conf")
+        partition_conf_path = os.path.join(
+            repo_dir, "platforms", target, "ufs", "partitions.conf"
+        )
         lines = read_partitions_conf(partition_conf_path)
     else:
         print("Error: Invalid argument combination.")
@@ -205,10 +235,15 @@ def main():
     partition_info = parse_partition_info(args, lines, args.StorageType)
     base_names = find_base_names(partition_info)
     if not base_names:
-        print("Warning: No partition pairs (_a/_b) found. FvUpdate.xml will not contain FwEntry blocks.")
+        print(
+            "Warning: No partition pairs (_a/_b) found. FvUpdate.xml will not contain FwEntry blocks."
+        )
     doc = create_xml(args, base_names, partition_info)
     write_xml(doc)
-    print(f"FvUpdate.xml has been created successfully with StorageType={args.StorageType}.")
+    print(
+        f"FvUpdate.xml has been created successfully with StorageType={args.StorageType}."
+    )
+
 
 if __name__ == "__main__":
     main()
