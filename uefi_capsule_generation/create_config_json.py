@@ -11,8 +11,8 @@ from collections import OrderedDict
 def create_config():
 
     config_json_data = OrderedDict()
-    Payloads_entry_dict = OrderedDict()        
-        
+    Payloads_entry_dict = OrderedDict()
+
     Payloads_entry_dict["Guid"] = ""
     Payloads_entry_dict["FwVersion"] = ""
     Payloads_entry_dict["LowestSupportedVersion"] = ""
@@ -24,7 +24,7 @@ def create_config():
     Payloads_entry_dict["OpenSslOtherPublicCertFile"] = ""
     Payloads_entry_dict["OpenSslTrustedPublicCertFile"] = ""
     Payloads_entry_dict["SigningToolPath"] = ""
-                                    
+
     config_json_data['Payloads'] = [Payloads_entry_dict]
 
     with open('config.json', 'w') as json_file:

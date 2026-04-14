@@ -34,7 +34,7 @@ def main(args):
 
     # Step 4: Update JSON parameters
     run_command(f'python3 UpdateJsonParameters.py -j {args.config} -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv -p {args.p} -x {args.x} -oc {args.oc} -g {args.guid}')
-    
+
     # Step 5: Generate capsule
     if args.edk2_path:
         generate_capsule = os.path.join(args.edk2_path, 'BaseTools', 'Source', 'Python', 'Capsule', 'GenerateCapsule.py')

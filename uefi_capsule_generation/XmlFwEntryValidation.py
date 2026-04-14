@@ -242,7 +242,7 @@ def fw_entry_fields_value_checking(raw_fwentry, meta_data_fwentry, g_dynamic_var
 
 
 def assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var):
-     
+
     if meta_data_fwentry.UpdateType == FVC_h.FWENTRY_UPDATE_TYPE.FAT_FILE:
         return False
 
@@ -260,7 +260,7 @@ def assign_file_guid_for_fw_entry(raw_fwentry, meta_data_fwentry, g_dynamic_var)
     try:
         uuid_obj = uuid.uuid4()
         meta_data_fwentry.FileGuid = (ctypes.c_byte * 16)(*uuid_obj.bytes)
-        
+
     except ValueError as e:
         print(f"ERROR: Failure creating FileGuid(error: {e}).\n")
         return False

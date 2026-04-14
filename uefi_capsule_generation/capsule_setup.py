@@ -107,7 +107,7 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
 
     try:
         subprocess.run(
-            ['git', 'clone', edk2_git_repo_sync_url, edk2_dir_path], 
+            ['git', 'clone', edk2_git_repo_sync_url, edk2_dir_path],
             check=True)
         print(f"Repository cloned into {edk2_dir_path}")
 
@@ -126,7 +126,7 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
 def sync_and_build_edk2_linux(edk2_dir_path, c_dir):
 
     if platform.system() == 'Linux':
-        edk2_get_repo_sync_stats = sync_edk2_linux(edk2_git_repo_sync_url, 
+        edk2_get_repo_sync_stats = sync_edk2_linux(edk2_git_repo_sync_url,
                                                    edk2_dir_path)
         if edk2_get_repo_sync_stats != True:
             return edk2_get_repo_sync_stats
@@ -179,7 +179,7 @@ def sync_edk2_win(clone_dir):
         print("\n", traceback.format_exc())
         print("\nFailed to sync edk2 from github\n\n")
         return "Failed to sync edk2 from github"
-    
+
     return True
 
 
@@ -287,7 +287,7 @@ def print_header_sync_generate_capsule_py(generate_capsule_py_file_path_abs):
     print("\n\n")
 
 
-def sync_generate_capsule_py(generate_capsule_py_sync_url, 
+def sync_generate_capsule_py(generate_capsule_py_sync_url,
                              generate_capsule_py_file_path_abs):
 
     if os.path.exists(generate_capsule_py_file_path_abs):
@@ -433,7 +433,7 @@ def sync_common_dir(base_dir_abs, common_dir_local_sync_path_abs):
         print("\nFailed to sync common dir from github\n\n")
         return "Failed to sync common dir from github"
 
-    shutil.copytree(Common_dir_path, 
+    shutil.copytree(Common_dir_path,
                     common_dir_local_sync_path_abs)
 
     if os.path.exists(temp_local_working_dir_path):
@@ -442,11 +442,11 @@ def sync_common_dir(base_dir_abs, common_dir_local_sync_path_abs):
     return True
 
 
-def clean_build(clean_build, 
-                generate_capsule_py_file_path_abs, 
-                edk2_sync_local_path_abs, 
-                genffs_path_abs, 
-                genfv_path_abs, 
+def clean_build(clean_build,
+                generate_capsule_py_file_path_abs,
+                edk2_sync_local_path_abs,
+                genffs_path_abs,
+                genfv_path_abs,
                 common_dir_local_sync_path_abs):
 
     if not clean_build:
@@ -549,19 +549,19 @@ def Main(args):
                     common_dir_local_sync_path_abs)
 
         sync_generate_capsule_py_stats = sync_generate_capsule_py(
-                                            generate_capsule_py_sync_url, 
+                                            generate_capsule_py_sync_url,
                                             generate_capsule_py_file_path_abs)
         sync_and_build_edk2_win_stats = sync_and_build_edk2_linux(
-                                            edk2_sync_local_path_abs, 
+                                            edk2_sync_local_path_abs,
                                             c_dir)
-        copy_GenFfs_win_stats = copy_GenFfs(base_dir_abs, 
-                                            genffs_sync_path_linux_abs, 
+        copy_GenFfs_win_stats = copy_GenFfs(base_dir_abs,
+                                            genffs_sync_path_linux_abs,
                                             genffs_local_path_abs)
-        copy_GenFv_win_stats = copy_GenFv(base_dir_abs, 
-                                          genfv_sync_path_linux_abs, 
+        copy_GenFv_win_stats = copy_GenFv(base_dir_abs,
+                                          genfv_sync_path_linux_abs,
                                           genfv_local_path_abs)
         sync_common_dir_stats = sync_common_dir(
-                                            base_dir_abs, 
+                                            base_dir_abs,
                                             common_dir_local_sync_path_abs)
 
         print_stats(sync_generate_capsule_py_stats,
@@ -569,7 +569,7 @@ def Main(args):
                     copy_GenFfs_win_stats,
                     copy_GenFv_win_stats,
                     sync_common_dir_stats)
-            
+
     if platform.system() == "Windows":
 
         base_dir_abs = os.path.dirname(os.path.abspath(__file__))
@@ -594,21 +594,21 @@ def Main(args):
         sync_generate_capsule_py_stats = sync_generate_capsule_py(
                                             generate_capsule_py_sync_url,
                                             generate_capsule_py_file_path_abs)
-        
+
         sync_and_build_edk2_win_stats = sync_and_build_edk2_win(
                                             edk2_sync_local_path_abs,
                                             args.full_build)
-        
+
         copy_GenFfs_win_stats = copy_GenFfs(
                                     base_dir_abs,
                                     genffs_sync_path_win_abs,
                                     genffs_local_path_abs)
-        
+
         copy_GenFv_win_stats = copy_GenFv(
                                     base_dir_abs,
                                     genfv_sync_path_win_abs,
                                     genfv_local_path_abs)
-        
+
         sync_common_dir_stats = sync_common_dir(
                                     base_dir_abs,
                                     common_dir_local_sync_path_abs)
@@ -622,14 +622,14 @@ def Main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser (
-                            prog = 
+                            prog =
                                 __prog__,
                             description =
                                 "VERSION: "
                                 +  __version__
-                                + ", " 
+                                + ", "
                                 + __description__ ,
-                            conflict_handler = 
+                            conflict_handler =
                                 'resolve',
                             )
 
@@ -639,7 +639,7 @@ if __name__ == "__main__":
                             "deletes any existing folders/files " \
                             "and download again. Default - 'False'")
 
-    parser.add_argument("-f", "--full_build", 
+    parser.add_argument("-f", "--full_build",
                         dest = 'full_build', default = False,
                         help = "If set to 'True', " \
                             "downloads additional submodules " \
@@ -649,4 +649,3 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     Main(args)
- 

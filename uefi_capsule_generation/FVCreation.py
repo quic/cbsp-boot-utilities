@@ -18,7 +18,7 @@ import re
 import traceback
 import ctypes
 import pickle
-import platform 
+import platform
 import uuid
 
 
@@ -70,11 +70,11 @@ class QSYS_FW_VERSION_DATA(ctypes.Structure):
             version_data = cls()
             ctypes.memmove(ctypes.addressof(version_data), byte_arr, ctypes.sizeof(version_data))
             return version_data
-        
-        except Exception: 
+
+        except Exception:
             print(traceback.format_exc())
             return None
-        
+
 
 def remove_files(ls_files):
     for s_file in ls_files:
@@ -86,9 +86,9 @@ def remove_files(ls_files):
 
 
 def get_dir_path(raw_fwentry, ls_search_paths):
-    
-    file_path = os.path.join(raw_fwentry.InputPath, raw_fwentry.InputBinary)    
-    
+
+    file_path = os.path.join(raw_fwentry.InputPath, raw_fwentry.InputBinary)
+
     if os.path.exists(file_path):
         print(f"INFO: File {raw_fwentry.InputBinary} found at {raw_fwentry.InputPath}.")
         return raw_fwentry.InputPath
@@ -97,7 +97,7 @@ def get_dir_path(raw_fwentry, ls_search_paths):
         file_path = os.path.join(s_path, raw_fwentry.InputBinary)
         if os.path.exists(file_path):
             return s_path
-        
+
     return None
 
 
@@ -116,7 +116,7 @@ def get_file_name_only(s_file):
 
 
 def Reflect(data_b, l_i):
-    
+
     data_i = int(data_b)
     reff_i = 0
 
@@ -140,11 +140,11 @@ def CalcCRC32_i(buffer_b, l_i):
     regsMask_i = int(regsMask_h)
 
     for i in range(l_i):
-        
+
         DataByte_b = buffer_b[i]
         DataByte_i = int(DataByte_b)
         DataByte_i = Reflect(DataByte_i, 8)
-        
+
         for j in range(k_i):
             MSB_i = DataByte_i >> (k_i-1)
             MSB_i = MSB_i & 1
@@ -152,11 +152,11 @@ def CalcCRC32_i(buffer_b, l_i):
             regs_i = regs_i << 1
             if (regsMSB_i ^ MSB_i) != 0:
                 regs_i = regs_i ^ gx_i
-            
+
             regs_i = regs_i & regsMask_i
             DataByte_i = DataByte_i << 1
     regs_i = regs_i & regsMask_i
-    
+
     return Reflect(regs_i, 32) ^ int(0xFFFFFFFF)
 
 def execute_command(s_command):
@@ -263,7 +263,7 @@ def generate_fv(s_output_file_name, ls_ffs, s_gen_fv, tools_dir=None):
         sFVCommand = f"{s_gen_fv} -o {s_output_file_name} -i {FV_MAIN_INF_NAME} -v"
         execute_command(sFVCommand)
 
-    
+
     if not os.path.exists(s_output_file_name):
         bReturn = False
     else:
@@ -307,8 +307,8 @@ def validate_sys_fw_ver_binary_file(fw_ver_binary_data):
             b_return = False
         elif print_logs >= 1:
             print("Expected VersionDataSize value found")
-        
-        fw_ver_binary_data.VersionDataCrc32 = temp_version_data_crc32  
+
+        fw_ver_binary_data.VersionDataCrc32 = temp_version_data_crc32
 
     except Exception as e:
         print(f"Encountered exception Message = {e}")
@@ -337,7 +337,7 @@ def get_versions_from_sys_fw_ver_binary_file(s_fw_ver_binary_file, fw_ver_binary
             print("get_versions_from_sys_fw_ver_binary_file :: fw_ver_binary_data.LowestSupportedFwVersion", fw_ver_binary_data.LowestSupportedFwVersion)
             print()
         return fw_ver_binary_data
-    
+
     except Exception:
         print(traceback.format_exc())
         return False
@@ -350,7 +350,7 @@ def guid_to_string(guid):
 
 
 def c_sharp_guid_format(guid_array):
-    new_guid_array = (guid_array.bytes[3:4] + guid_array.bytes[2:3] + guid_array.bytes[1:2] + guid_array.bytes[0:1] 
+    new_guid_array = (guid_array.bytes[3:4] + guid_array.bytes[2:3] + guid_array.bytes[1:2] + guid_array.bytes[0:1]
                       + guid_array.bytes[5:6] + guid_array.bytes[4:5]
                       + guid_array.bytes[7:8] + guid_array.bytes[6:7]
                       + guid_array.bytes[8:]
@@ -359,7 +359,7 @@ def c_sharp_guid_format(guid_array):
 
 
 def generate_sys_fw_meta_data_file(fw_ver_binary_data, s_breaking_change_number, g_dynamic_var):
-    
+
     if fw_ver_binary_data.FwVersion < fw_ver_binary_data.LowestSupportedFwVersion:
         print("ERROR: Lowest Firmware version value is greater than or equal to current firmware version value.\n")
         return False
@@ -382,7 +382,7 @@ def generate_sys_fw_meta_data_file(fw_ver_binary_data, s_breaking_change_number,
         # Use V4 Payload header format if MatchIdentifier in XML.
         meta_data_header.Revision = SYS_FW_METADATA_HEADER_REVISION
         fw_entry_meta_data_size = sys.getsizeof(FVC_h.QPAYLOAD_METADATA_FWENTRY)
-    
+
     else:
         # Use V3 Payload header format if MatchIdentifier not in XML.
         meta_data_header.Revision = SYS_FW_METADATA_HEADER_REVISION_V3
@@ -396,11 +396,11 @@ def generate_sys_fw_meta_data_file(fw_ver_binary_data, s_breaking_change_number,
     meta_data_header.Reserved1 = 0x0
     meta_data_header.Reserved2 = 0x0
     meta_data_header.EntryCount = len(g_dynamic_var.QpayloadFwEntryList)
-    
+
     with open(SYS_FW_METADATA_FILE, 'wb') as fs:
         header_bytes = ctypes.string_at(ctypes.byref(meta_data_header), ctypes.sizeof(meta_data_header))
         fs.write(header_bytes)
-        
+
         # Write metaData fw entries to metadata.dat
         for fw_entry in g_dynamic_var.QpayloadFwEntryList:
 
@@ -413,17 +413,17 @@ def generate_sys_fw_meta_data_file(fw_ver_binary_data, s_breaking_change_number,
 
             new_uuid_obj = c_sharp_guid_format(uuid.UUID(bytes=bytes(fw_entry.UpdatePath.PartitionTypeGUID)))
             fw_entry.UpdatePath.PartitionTypeGUID = (ctypes.c_byte * 16)(*new_uuid_obj)
-            
+
             BackupPath_PartitionName_string = ''.join(chr(b) for b in fw_entry.BackupPath.PartitionName)
             BackupPath_PartitionName_string = BackupPath_PartitionName_string.replace("\0", "")
             fw_entry.BackupPath.PartitionName[:len(BackupPath_PartitionName_string.encode('utf-16-le'))] = BackupPath_PartitionName_string.encode('utf-16-le')
 
             new_uuid_obj = c_sharp_guid_format(uuid.UUID(bytes=bytes(fw_entry.BackupPath.PartitionTypeGUID)))
             fw_entry.BackupPath.PartitionTypeGUID = (ctypes.c_byte * 16)(*new_uuid_obj)
-            
+
             bytes_data = fw_entry.to_bytes()
             fs.write(bytes_data[:fw_entry_meta_data_size])
-    
+
     return True
 
 
@@ -455,7 +455,7 @@ def process_sys_fw_ffs_creation(
         elif print_logs >= 2:
             print("%s parsed successfully" % (s_fw_ver_binary_file))
 
-    
+
         if not validate_sys_fw_ver_binary_file(fw_ver_binary_data):
             print("ERROR: Wrong SYSFW_VERSION.BIN file is supplied")
             return False
@@ -497,15 +497,15 @@ def process_sys_fw_ffs_creation(
             return False
         elif print_logs >= 2:
             print("generated ffs file with generate_sys_fw_ffs_list")
-            
+
     except Exception:
         print(traceback.format_exc())
-    
+
     return True
 
 
 def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_dir=None):
-    
+
     try:
         for raw_fwentry in g_dynamic_var.XmlRawFwEntryList:
 
@@ -514,7 +514,7 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
 
             s_file_name = raw_fwentry.InputBinary[:raw_fwentry.InputBinary.rfind(".")]
             s_dir_path = get_dir_path(raw_fwentry, ls_paths)
-            
+
             if s_dir_path is None:
                 print(f"ERROR: File {raw_fwentry.InputBinary} cannot be found in any of the search paths.\n")
                 return False
@@ -525,7 +525,7 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
             if s_file_name + ".ffs" in ls_ffs:
                 temp_str = raw_fwentry.UpdatePath.PartitionName.lower().replace(s_file_name.lower(), "").strip('_')
                 s_file_name = f"{s_file_name}_{temp_str}"
-            
+
             print(f"INFO: Creating ffs file for {raw_fwentry.InputBinary}.")
 
             #
@@ -542,12 +542,12 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
             #
             # execute GenFfs in Windows
             #
-            if platform.system() == "Windows":	
+            if platform.system() == "Windows":
                 raw_fwentry_FileGuid_uuid_bytes_obj = bytes(raw_fwentry.FileGuid)
                 raw_fwentry_FileGuid_uuid_str = str(uuid.UUID(bytes=raw_fwentry_FileGuid_uuid_bytes_obj))
                 s_command = f"{s_gen_ffs} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {raw_fwentry_FileGuid_uuid_str} -s -v -i {os.path.join(s_dir_path, raw_fwentry.InputBinary)}"
-                execute_command(s_command)			
-                
+                execute_command(s_command)
+
             ls_ffs.append(s_file_name + ".ffs")
 
         s_file_name = SYS_FW_METADATA_FILE[:SYS_FW_METADATA_FILE.rfind(".")]
@@ -563,7 +563,7 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
         if platform.system() == "Windows":
             s_command = f"{s_gen_ffs} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {s_guid} -s -v -i {SYS_FW_METADATA_FILE}"
             execute_command(s_command)
-        
+
         ls_ffs.append(s_file_name + ".ffs")
 
         #
@@ -597,7 +597,7 @@ class Arguments:
 
 
     def ConstructConfData(self, args):
-        
+
         self.parameters.clear()
         splitter = re.compile(r'^-{1,2}|^/', re.IGNORECASE)
         remover = re.compile(r"^['\"]?(.*?)['\"]?$", re.IGNORECASE)
@@ -606,7 +606,7 @@ class Arguments:
         for txt in args:
 
             parts = splitter.split(txt, maxsplit=2)
-            
+
             if len(parts) == 1:
                 if parameter is not None:
                     if parameter not in self.parameters:
@@ -619,15 +619,15 @@ class Arguments:
                     if parameter not in self.parameters:
                         self.parameters[parameter] = "true"
                 parameter = parts[1]
-        
+
         if parameter is not None:
             if parameter not in self.parameters:
                 self.parameters[parameter] = "true"
-        
-    
+
+
     def __getitem__(self, Param):
         return self.parameters.get(Param)
-    
+
 
 def The_Main(args):
 
@@ -659,7 +659,7 @@ def The_Main(args):
     # Skipping the re-creation of all executables
     if len(args) == 1 and args[0].lower() == "-v":
         print("Version: %s" % (TOOL_VERSION_STRING))
-    
+
     s_output_file_name = args[0]
 
     if args[1].lower() == "-FvType".lower():
@@ -670,14 +670,14 @@ def The_Main(args):
     else:
         print("Invalid arguments")
         print_help()
-    
+
     if fv_type.lower() == "SYS_FW".lower():
         s_xml_file_name = args[3]
         s_fw_ver_binary_file = args[4]
 
         for i in range(5, len(args)):
             ls_paths.append(args[i])
-        
+
         r = process_sys_fw_ffs_creation(s_xml_file_name=s_xml_file_name,
                                         s_fw_ver_binary_file=s_fw_ver_binary_file,
                                         s_gen_ffs=s_gen_ffs,
@@ -689,13 +689,13 @@ def The_Main(args):
                                         tools_dir=tools_dir)
         if not r:
             print("process_sys_fw_ffs_creation failed")
-    
+
     if not generate_fv(s_output_file_name, ls_ffs, s_gen_fv, tools_dir):
         print("GenerateFV failed.\n")
         return
     else:
         print("FV created successfully")
-    
+
     dir_path = os.path.dirname(os.path.realpath(__file__))
     test = os.listdir(dir_path)
     for file in test:
@@ -709,8 +709,8 @@ def The_Main(args):
             os.remove(os.path.join(dir_path, file))
         if file.endswith(".dat"):
             os.remove(os.path.join(dir_path, file))
-    
-    
+
+
 if __name__ == "__main__":
     args = sys.argv
     del args[0]

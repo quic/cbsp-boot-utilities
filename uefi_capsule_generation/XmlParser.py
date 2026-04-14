@@ -32,52 +32,52 @@ def print_all_level_d(d, indent = 0, log_file_obj = None):
         for i in range(indent):
             print(" ", end="")
             s += " "
-        
+
         print("[")
         for x in d:
             print_all_level_d(x, indent, log_file_obj)
             print()
-        
+
         s = ""
         for i in range(indent):
             print(" ", end="")
             s += " "
         print("]")
-        
+
         return
-    
+
     if isinstance(d, str):
         s = ""
         for i in range(indent):
             print(" ", end="")
             s += " "
         print(d)
-        
+
         return
-    
+
     for x in d:
-        
+
         if isinstance(d[x], OrderedDict) or isinstance(d[x], dict) or isinstance(d[x], list):
             s = ""
             for i in range(indent):
                 print(" ", end="")
                 s += " "
-            print(x + " : ") 
+            print(x + " : ")
             print_all_level_d(d[x], indent+4, log_file_obj)
-        
+
         else:
             s = ""
             for i in range(indent):
                 print(" ", end="")
-                s += " " 
+                s += " "
             print(x + " : ", end="")
             print(d[x])
-                        
+
 
 def xml_to_dict(ele):
     if len(ele) == 0:
         return ele.text
-    
+
     result_dict = OrderedDict()
     for c in ele:
         c_dict = xml_to_dict(c)
@@ -89,25 +89,25 @@ def xml_to_dict(ele):
                 result_dict[c.tag] = [result_dict[c.tag], c_dict]
         else:
             result_dict[c.tag] = c_dict
-    
+
     return result_dict
 
 
 def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
-    
+
     try:
         tree = ET.parse(s_xml_file)
         root = tree.getroot()
 
-    
+
 
     except Exception:
         print(traceback.format_exc())
         return False
-    
+
     result_dict = xml_to_dict(root)
 
-    
+
     # print_all_level_d(result_dict)
 
 
@@ -123,7 +123,7 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
         raw_fw_item.UpdateType = fw_entry["UpdateType"]
         raw_fw_item.BackupType = fw_entry["BackupType"]
         raw_fw_item.UpdatePath.DiskType = fw_entry["Dest"]["DiskType"]
-        
+
         raw_fw_item.UpdatePath.PartitionName = fw_entry["Dest"]["PartitionName"]
         raw_fw_item.UpdatePath.PartitionTypeGUID = fw_entry["Dest"]["PartitionTypeGUID"]
         raw_fw_item.BackupPath.DiskType = fw_entry["Backup"]["DiskType"]
@@ -133,8 +133,8 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
         g_dynamic_var.XmlRawFwEntryList.append(raw_fw_item)
 
     # print("\n\n\n*******************\n")
-    
-    
+
+
     metadata_items = root.findall(".//Metadata")
 
     for metadata in metadata_items:

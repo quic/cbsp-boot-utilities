@@ -77,7 +77,7 @@ def set_dtb_property(dtb_path: str, node_path: str, prop_name: str, value: str,
         if hasattr(e, "err") and e.err == -libfdt.FDT_ERR_NOSPACE:
             print("[!] Not enough space, resizing DTB...")
             # Resize DTB buffer to fit new property
-            fdt_obj.resize(len(fdt_obj.as_bytearray()) + max(len(value_bytes), extra_space)) 
+            fdt_obj.resize(len(fdt_obj.as_bytearray()) + max(len(value_bytes), extra_space))
             # Retry setting the property
             fdt_obj.setprop(node_off, prop_name, value_bytes)
         else:
