@@ -8,7 +8,6 @@ import struct
 import sys
 
 
-
 def encode_value(value: str) -> bytes:
     """
     Encode a value for FDT:

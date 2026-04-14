@@ -110,9 +110,6 @@ def ExtractEcFwVersions(StringData, SubString):
 
         offset = StringData.find(SubString)
         index = offset + len(SubString)
-        FwVerMain = (ord(StringData[index + 0]) - ord("0")) * 10 + (
-            ord(StringData[index + 1]) - ord("0")
-        )
         FwVerSub = (ord(StringData[index + 3]) - ord("0")) * 10 + (
             ord(StringData[index + 4]) - ord("0")
         )
@@ -150,7 +147,7 @@ def GetEcFirmwareInfo(args):
                 )
             )
 
-    except FileNotFoundError:
+    except FileNotFoundError as e:
         print("EC Bin File does not exist: {0}.".format(e))
         sys.exit(1)
 

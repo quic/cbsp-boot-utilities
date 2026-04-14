@@ -344,10 +344,6 @@ def replace_ph(
     print(f"[i] New SHA-384: {new_hash.hex()}")
 
     is_64 = elf.elfclass == 64
-    endian = "<" if elf.little_endian else ">"
-    phoff = elf.header["e_phoff"]
-    phentsz = elf.header["e_phentsize"]
-    shoff = elf.header["e_shoff"]
 
     grow_size = new_size - old_size
 

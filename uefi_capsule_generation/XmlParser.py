@@ -167,8 +167,6 @@ def parse_input_xml(s_xml_file, s_breaking_change_number, g_dynamic_var):
                 "ERROR: Invalid BreakingChangeNumber in the XML file. BreakingChangeNumber should only contain numbers."
             )
             return False
-        else:
-            s_breaking_change_number = s_brk_chg_num
 
         if not media_found:
             print("Warning: MetaData does not contain FlashType element.")

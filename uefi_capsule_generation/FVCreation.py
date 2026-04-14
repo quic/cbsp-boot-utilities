@@ -718,8 +718,6 @@ def The_Main(args):
     ls_paths = []
     g_dynamic_var = FVC_h.GlobalDynamicVariable()
     fw_ver_binary_data = FVC_h.QSYS_FW_VERSION_DATA()
-    fw_version = 0
-    lowest_supported_fw_version = 0
     s_gen_ffs = "GenFfs.exe"
     s_gen_fv = "GenFv.exe"
     tools_dir = None
