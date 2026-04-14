@@ -7,9 +7,9 @@ import hashlib
 import io
 import os
 import struct
-
 from dataclasses import dataclass
 from typing import List, Tuple
+
 from elftools.elf.elffile import ELFFile
 
 # =========================================================

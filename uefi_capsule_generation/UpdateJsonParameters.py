@@ -12,11 +12,11 @@
 import argparse
 import json
 import os
+import platform
 import subprocess
 import sys
-from collections import OrderedDict
-import platform
 import traceback
+from collections import OrderedDict
 
 
 def ParseArguments():

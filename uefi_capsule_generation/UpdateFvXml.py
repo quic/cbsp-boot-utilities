@@ -3,12 +3,12 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
+import argparse
 import os
 import re
-import argparse
 import subprocess
-from xml.dom import minidom
 import sys
+from xml.dom import minidom
 
 REPO_URL = "https://github.com/qualcomm-linux/qcom-ptool.git"
 REPO_DIR = "qcom-ptool"

@@ -3,9 +3,9 @@
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
+import argparse
 import os
 import subprocess
-import argparse
 
 
 def run_command(command, fail_on_error=False):

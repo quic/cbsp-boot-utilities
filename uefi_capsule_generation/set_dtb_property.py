@@ -2,10 +2,11 @@
 # Copyright (c) Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 
-import libfdt
 import re
 import struct
 import sys
+
+import libfdt
 
 
 def encode_value(value: str) -> bytes:

@@ -4,21 +4,21 @@
 # --------------------------------------------------------------------
 
 
-import os
-from enum import Enum
-import FVCreation_header as FVC_h
-import subprocess
-import struct
 import binascii
-import sys
-import XmlParser as xp
-import XmlFwEntryValidation as XFEV
-import re
-import traceback
 import ctypes
+import os
 import platform
+import re
+import struct
+import subprocess
+import sys
+import traceback
 import uuid
+from enum import Enum
 
+import FVCreation_header as FVC_h
+import XmlFwEntryValidation as XFEV
+import XmlParser as xp
 
 print_logs = 0
 

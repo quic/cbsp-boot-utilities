@@ -4,11 +4,12 @@
 # --------------------------------------------------------------------
 
 
-import xml.etree.ElementTree as ET
-import FVCreation_header as FVC_h
-from collections import OrderedDict
-import traceback
 import re
+import traceback
+import xml.etree.ElementTree as ET
+from collections import OrderedDict
+
+import FVCreation_header as FVC_h
 
 
 def print_all_level_d(d, indent=0, log_file_obj=None):

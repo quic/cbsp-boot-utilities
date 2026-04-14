@@ -4,11 +4,10 @@
 # --------------------------------------------------------------------
 
 
-import sys
+import ctypes
 import os
 import re
-
-import ctypes
+import sys
 import traceback
 
 print_logs = 1

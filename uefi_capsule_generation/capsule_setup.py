@@ -12,15 +12,15 @@ __description__ = (
 )
 
 
-import requests
-import subprocess
-import os
-import shutil
-import platform
 import argparse
-import validators
+import os
+import platform
+import shutil
+import subprocess
 import traceback
 
+import requests
+import validators
 
 edk2_branch = "edk2-stable202008"
 edk2_git_repo_sync_url = "https://github.com/tianocore/edk2.git"

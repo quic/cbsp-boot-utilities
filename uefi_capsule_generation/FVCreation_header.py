@@ -4,10 +4,10 @@
 # --------------------------------------------------------------------
 
 
-from enum import IntEnum
+import ctypes
 import uuid
 from collections import deque
-import ctypes
+from enum import IntEnum
 
 
 class FWENTRY_OPERATION_TYPE(IntEnum):
