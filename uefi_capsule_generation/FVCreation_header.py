@@ -397,7 +397,7 @@ class GlobalDynamicVariable:
         FWENTRY_BACKUP_TYPE.FAT_FILE: "BACKUP_FAT_FILE",
     }
 
-    XmlRawFwEntryList = deque()
-    QpayloadFwEntryList = deque()
+    XmlRawFwEntryList: deque = deque()
+    QpayloadFwEntryList: deque = deque()
     DeviceFlashType = None
     isMatchIdentifierInXML = False
