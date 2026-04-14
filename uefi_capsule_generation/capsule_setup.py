@@ -128,7 +128,7 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
         print(f"Error cloning repository: {e}")
         return "Error cloning repository"
 
-    if update_edk2_submodules_linux(edk2_dir_path) != True:
+    if update_edk2_submodules_linux(edk2_dir_path) is not True:
         print("Failed to sync submodules")
         return "Failed to sync submodules"
 
@@ -141,12 +141,12 @@ def sync_and_build_edk2_linux(edk2_dir_path, c_dir):
         edk2_get_repo_sync_stats = sync_edk2_linux(
             edk2_git_repo_sync_url, edk2_dir_path
         )
-        if edk2_get_repo_sync_stats != True:
+        if edk2_get_repo_sync_stats is not True:
             return edk2_get_repo_sync_stats
 
         edk2_build_stats = run_make_command_linux(c_dir)
 
-        if edk2_build_stats != True:
+        if edk2_build_stats is not True:
             return edk2_build_stats
 
     return True
@@ -253,7 +253,7 @@ def sync_and_build_edk2_win(clone_dir, full_build):
 
     if platform.system() == "Windows":
         edk2_get_repo_sync_stats = sync_edk2_win(clone_dir)
-        if edk2_get_repo_sync_stats != True:
+        if edk2_get_repo_sync_stats is not True:
             return edk2_get_repo_sync_stats
 
 
@@ -519,29 +519,29 @@ def print_stats(
         "------------------------------------"
     )
 
-    if sync_generate_capsule_py_stats == True:
+    if sync_generate_capsule_py_stats is True:
         print("Downloaded GenerateCapsule.py successfully")
     else:
         print(
             f"Downloading GenerateCapsule.py failed: {sync_generate_capsule_py_stats}"
         )
 
-    if sync_and_build_edk2_win_stats == True:
+    if sync_and_build_edk2_win_stats is True:
         print("Downloaded and Built EDK2 successfully")
     else:
         print(f"Downloading and Building EDK2 failed: {sync_and_build_edk2_win_stats}")
 
-    if copy_GenFfs_win_stats == True:
+    if copy_GenFfs_win_stats is True:
         print("Copied GenFfs successfully")
     else:
         print(f"Copying GenFfs failed: {copy_GenFfs_win_stats}")
 
-    if copy_GenFv_win_stats == True:
+    if copy_GenFv_win_stats is True:
         print("Copied GenFv successfully")
     else:
         print(f"Copying GenFv failed: {copy_GenFv_win_stats}")
 
-    if sync_common_dir_stats == True:
+    if sync_common_dir_stats is True:
         print("Downloaded Common directory successfully")
     else:
         print(f"Downloading Common directory failed: {sync_common_dir_stats}")

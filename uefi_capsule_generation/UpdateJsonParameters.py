@@ -171,7 +171,7 @@ def get_python_version():
     except Exception:
         print("'python --version' command failed to execute at command line")
 
-    if python_version == None:
+    if python_version is None:
         try:
             output = subprocess.check_output(["python3", "--version"]).decode().strip()
             python_version_op_l = output.split(" ")
@@ -181,7 +181,7 @@ def get_python_version():
         except Exception:
             print("'python3 --version' command failed to execute at command line")
 
-    if python_version == None:
+    if python_version is None:
         print("ERROR 'python --version' and python")
         return None
 
