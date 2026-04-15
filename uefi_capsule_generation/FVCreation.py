@@ -6,6 +6,7 @@
 
 
 import os
+import shutil
 from enum import Enum
 import FVCreation_header as FVC_h
 import subprocess
@@ -189,6 +190,13 @@ def execute_command_linux(s_command):
     except Exception as e:
         print(f"Exception running command: {e}\n")
 
+def _resolve_tools_dir(tool_name):
+    """Prefer PATH lookup; fall back to the script directory."""
+    found = shutil.which(tool_name)
+    if found:
+        return os.path.dirname(found)
+    return os.path.dirname(os.path.realpath(__file__))
+
 def regenerate_all_executables():
     ls_executables = []
     cur_directory = os.path.dirname(os.path.abspath(__file__))
@@ -255,7 +263,7 @@ def generate_fv(s_output_file_name, ls_ffs, s_gen_fv, tools_dir=None):
 
     if platform.system() == "Linux":
         if tools_dir is None:
-            tools_dir = os.path.dirname(os.path.realpath(__file__))
+            tools_dir = _resolve_tools_dir("GenFv")
         sFVCommand = f"{tools_dir}/GenFv -o {s_output_file_name} -i {FV_MAIN_INF_NAME} -v"
         execute_command_linux(sFVCommand)
 
@@ -533,7 +541,7 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
             #
             if platform.system() == "Linux":
                 if tools_dir is None:
-                    tools_dir = os.path.dirname(os.path.realpath(__file__))
+                    tools_dir = _resolve_tools_dir("GenFfs")
                 raw_fwentry_FileGuid_uuid_bytes_obj = bytes(raw_fwentry.FileGuid)
                 raw_fwentry_FileGuid_uuid_str = str(uuid.UUID(bytes=raw_fwentry_FileGuid_uuid_bytes_obj))
                 s_command = f"{tools_dir}/GenFfs -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {raw_fwentry_FileGuid_uuid_str} -s -v -i {os.path.join(s_dir_path, raw_fwentry.InputBinary)}"
@@ -556,7 +564,7 @@ def generate_sys_fw_ffs_list(ls_ffs, s_gen_ffs, ls_paths, g_dynamic_var, tools_d
         print(f"INFO: Creating ffs file for {SYS_FW_METADATA_FILE}.")
         if platform.system() == "Linux":
             if tools_dir is None:
-                tools_dir = os.path.dirname(os.path.realpath(__file__))
+                tools_dir = _resolve_tools_dir("GenFfs")
             s_command = f"{tools_dir}/GenFfs -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {s_guid} -s -v -i {SYS_FW_METADATA_FILE}"
             execute_command_linux(s_command)
 
