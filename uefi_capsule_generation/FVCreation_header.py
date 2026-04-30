@@ -1,16 +1,14 @@
-
 # --------------------------------------------------------------------
 # Copyright (c) 2024 Qualcomm Innovation Center, Inc. All rights reserved.
 # SPDX-License-Identifier: BSD-3-Clause-Clear
 # --------------------------------------------------------------------
 
 
-from enum import Enum, IntEnum
-import struct
+import ctypes
 import uuid
 from collections import deque
-import traceback
-import ctypes
+from enum import IntEnum
+
 
 class FWENTRY_OPERATION_TYPE(IntEnum):
     IGNORE = 0x00000000
@@ -122,36 +120,50 @@ class GlobalStaticVariable:
 
 
 class FWENTRY_DEVICE_PATH(ctypes.Structure):
-
     _pack_ = 1
     _fields_ = [
         ("DiskType", ctypes.c_uint32),
-        ("PartitionName", ctypes.c_byte * (2 * GlobalStaticVariable.PARTITION_NAME_MAX_SIZE)),
+        (
+            "PartitionName",
+            ctypes.c_byte * (2 * GlobalStaticVariable.PARTITION_NAME_MAX_SIZE),
+        ),
         ("PartitionTypeGUID", ctypes.c_byte * 16),
-        ("FileName", ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE))
+        ("FileName", ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE)),
     ]
 
     def __init__(self, pType=0):
         self.DiskType = pType
-        self.PartitionName = (ctypes.c_byte * (2 * GlobalStaticVariable.PARTITION_NAME_MAX_SIZE))()
-        self.PartitionTypeGUID = (ctypes.c_byte * 16).from_buffer_copy(uuid.UUID(int=0).bytes)
-        self.FileName = (ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE))()
+        self.PartitionName = (
+            ctypes.c_byte * (2 * GlobalStaticVariable.PARTITION_NAME_MAX_SIZE)
+        )()
+        self.PartitionTypeGUID = (ctypes.c_byte * 16).from_buffer_copy(
+            uuid.UUID(int=0).bytes
+        )
+        self.FileName = (
+            ctypes.c_byte * (2 * GlobalStaticVariable.FILE_NAME_MAX_SIZE)
+        )()
 
     def copy_from(self, devPath):
         self.DiskType = devPath.DiskType
-        ctypes.memmove(self.PartitionName, devPath.PartitionName, ctypes.sizeof(self.PartitionName))
-        self.PartitionTypeGUID = (ctypes.c_byte * 16).from_buffer_copy(devPath.PartitionTypeGUID)
+        ctypes.memmove(
+            self.PartitionName, devPath.PartitionName, ctypes.sizeof(self.PartitionName)
+        )
+        self.PartitionTypeGUID = (ctypes.c_byte * 16).from_buffer_copy(
+            devPath.PartitionTypeGUID
+        )
         ctypes.memmove(self.FileName, devPath.FileName, ctypes.sizeof(self.FileName))
 
     def equals(self, devPath):
-        base_partition_name = ''.join(self.PartitionName)
-        base_file_name = ''.join(self.FileName)
-        target_partition_name = ''.join(devPath.PartitionName)
-        target_file_name = ''.join(devPath.FileName)
-        return (self.DiskType == devPath.DiskType and
-                base_partition_name == target_partition_name and
-                self.PartitionTypeGUID[:] == devPath.PartitionTypeGUID[:] and
-                base_file_name == target_file_name)
+        base_partition_name = "".join(self.PartitionName)
+        base_file_name = "".join(self.FileName)
+        target_partition_name = "".join(devPath.PartitionName)
+        target_file_name = "".join(devPath.FileName)
+        return (
+            self.DiskType == devPath.DiskType
+            and base_partition_name == target_partition_name
+            and self.PartitionTypeGUID[:] == devPath.PartitionTypeGUID[:]
+            and base_file_name == target_file_name
+        )
 
     def to_bytes(self):
         return bytes(self)
@@ -162,12 +174,11 @@ class XML_RAW_FWENTRY_DEVICE_PATH(ctypes.Structure):
         ("DiskType", ctypes.c_wchar_p),
         ("PartitionName", ctypes.c_wchar_p),
         ("PartitionTypeGUID", ctypes.c_wchar_p),
-        ("FileName", ctypes.c_wchar_p)
+        ("FileName", ctypes.c_wchar_p),
     ]
 
 
 class QPAYLOAD_METADATA_FWENTRY(ctypes.Structure):
-
     _pack_ = 1
     _fields_ = [
         ("FileGuid", ctypes.c_byte * 16),
@@ -177,7 +188,10 @@ class QPAYLOAD_METADATA_FWENTRY(ctypes.Structure):
         ("UpdatePath", FWENTRY_DEVICE_PATH),
         ("BackupPath", FWENTRY_DEVICE_PATH),
         ("Revision", ctypes.c_uint32),
-        ("MatchIdentifier", ctypes.c_char * (2 * GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE))
+        (
+            "MatchIdentifier",
+            ctypes.c_char * (2 * GlobalStaticVariable.MATCH_IDENTIFIER_NAME_MAX_SIZE),
+        ),
     ]
 
     def to_bytes(self):
@@ -194,7 +208,7 @@ class XML_RAW_FWENTRY(ctypes.Structure):
         ("BackupType", ctypes.c_wchar_p),
         ("UpdatePath", XML_RAW_FWENTRY_DEVICE_PATH),
         ("BackupPath", XML_RAW_FWENTRY_DEVICE_PATH),
-        ("MatchIdentifier", ctypes.c_wchar_p)
+        ("MatchIdentifier", ctypes.c_wchar_p),
     ]
 
 
@@ -209,7 +223,7 @@ class QPAYLOAD_METADATA_HEADER(ctypes.Structure):
         ("BreakingChangeNumber", ctypes.c_uint32),
         ("Reserved1", ctypes.c_uint32),
         ("Reserved2", ctypes.c_uint32),
-        ("EntryCount", ctypes.c_uint32)
+        ("EntryCount", ctypes.c_uint32),
     ]
 
     def to_bytes(self):
@@ -223,7 +237,7 @@ class QSYS_FW_VERSION_DATA(ctypes.Structure):
         ("VersionDataSize", ctypes.c_uint32),
         ("VersionDataCrc32", ctypes.c_uint32),
         ("FwVersion", ctypes.c_uint32),
-        ("LowestSupportedFwVersion", ctypes.c_uint32)
+        ("LowestSupportedFwVersion", ctypes.c_uint32),
     ]
 
     def to_bytes(self):
@@ -248,12 +262,12 @@ class GlobalDynamicVariable:
         "\\ACPI\\FACP.ACP": GlobalStaticVariable.FILE_GUID_FACP_ACPI,
         "\\ACPI\\FACS.ACP": GlobalStaticVariable.FILE_GUID_FACS_ACPI,
         "\\ACPI\\FPDT.ACP": GlobalStaticVariable.FILE_GUID_FPDT_ACPI,
-        "\\ACPI\\MADT.ACP": GlobalStaticVariable.FILE_GUID_MADT_ACPI
+        "\\ACPI\\MADT.ACP": GlobalStaticVariable.FILE_GUID_MADT_ACPI,
     }
 
     dFileGuidByDestDppItemFile = {
         "OPM_PUB.PROVISION": GlobalStaticVariable.FILE_GUID_OPM_PUB_PROVISION,
-        "OPM_PRIV.PROVISION": GlobalStaticVariable.FILE_GUID_OPM_PRIV_PROVISION
+        "OPM_PRIV.PROVISION": GlobalStaticVariable.FILE_GUID_OPM_PRIV_PROVISION,
     }
 
     dDiskTypeByString = {
@@ -274,7 +288,7 @@ class GlobalDynamicVariable:
         "UFS_LUN6": FWENTRY_DISK_TYPE.LUN6,
         "UFS_LUN7": FWENTRY_DISK_TYPE.LUN7,
         "SPINOR": FWENTRY_DISK_TYPE.SPINOR,
-        "NVME": FWENTRY_DISK_TYPE.NVME
+        "NVME": FWENTRY_DISK_TYPE.NVME,
     }
 
     dDiskTypeByValue = {
@@ -295,21 +309,21 @@ class GlobalDynamicVariable:
         FWENTRY_DISK_TYPE.LUN6: "UFS_LUN6",
         FWENTRY_DISK_TYPE.LUN7: "UFS_LUN7",
         FWENTRY_DISK_TYPE.SPINOR: "SPINOR",
-        FWENTRY_DISK_TYPE.NVME: "NVME"
+        FWENTRY_DISK_TYPE.NVME: "NVME",
     }
 
     dFlashTypeByString = {
         "EMMC": FlashType.EMMC,
         "UFS": FlashType.UFS,
         "NORNVME": FlashType.NORNVME,
-        "NORUFS": FlashType.NORUFS
+        "NORUFS": FlashType.NORUFS,
     }
 
     dFlashTypeByValue = {
         FlashType.EMMC: "EMMC",
         FlashType.UFS: "UFS",
         FlashType.NORNVME: "NORNVME",
-        FlashType.NORUFS: "NORUFS"
+        FlashType.NORUFS: "NORUFS",
     }
 
     dFlashTypeByDiskType = {
@@ -330,29 +344,29 @@ class GlobalDynamicVariable:
         FWENTRY_DISK_TYPE.LUN6: [FlashType.UFS],
         FWENTRY_DISK_TYPE.LUN7: [FlashType.UFS],
         FWENTRY_DISK_TYPE.SPINOR: [FlashType.NORNVME, FlashType.NORUFS],
-        FWENTRY_DISK_TYPE.NVME: [FlashType.NORNVME]
+        FWENTRY_DISK_TYPE.NVME: [FlashType.NORNVME],
     }
 
     dOperationTypeByString = {
         "IGNORE": FWENTRY_OPERATION_TYPE.IGNORE,
-        "UPDATE": FWENTRY_OPERATION_TYPE.UPDATE
+        "UPDATE": FWENTRY_OPERATION_TYPE.UPDATE,
     }
 
     dOperationTypeByValue = {
         FWENTRY_OPERATION_TYPE.IGNORE: "IGNORE",
-        FWENTRY_OPERATION_TYPE.UPDATE: "UPDATE"
+        FWENTRY_OPERATION_TYPE.UPDATE: "UPDATE",
     }
 
     dOperationPathTypeByString = {
         "SOURCE": FWENTRY_OPERATION_PATH_TYPE.SOURCE,
         "DEST": FWENTRY_OPERATION_PATH_TYPE.DEST,
-        "BACKUP": FWENTRY_OPERATION_PATH_TYPE.BACKUP
+        "BACKUP": FWENTRY_OPERATION_PATH_TYPE.BACKUP,
     }
 
     dOperationPathTypeByValue = {
         FWENTRY_OPERATION_PATH_TYPE.SOURCE: "SOURCE",
         FWENTRY_OPERATION_PATH_TYPE.DEST: "DEST",
-        FWENTRY_OPERATION_PATH_TYPE.BACKUP: "BACKUP"
+        FWENTRY_OPERATION_PATH_TYPE.BACKUP: "BACKUP",
     }
 
     dUpdateTypeByString = {
@@ -361,7 +375,7 @@ class GlobalDynamicVariable:
         "UPDATE_DPP_QCOM": FWENTRY_UPDATE_TYPE.DPP_QCOM,
         "UPDATE_DPP_OEM": FWENTRY_UPDATE_TYPE.DPP_OEM,
         "UPDATE_OPM_PRIV_KEY": FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY,
-        "UPDATE_FWCLASS_GUID": FWENTRY_UPDATE_TYPE.FWCLASS_GUID
+        "UPDATE_FWCLASS_GUID": FWENTRY_UPDATE_TYPE.FWCLASS_GUID,
     }
 
     dUpdateTypeByValue = {
@@ -370,20 +384,20 @@ class GlobalDynamicVariable:
         FWENTRY_UPDATE_TYPE.DPP_QCOM: "UPDATE_DPP_QCOM",
         FWENTRY_UPDATE_TYPE.DPP_OEM: "UPDATE_DPP_OEM",
         FWENTRY_UPDATE_TYPE.OPM_PRIV_KEY: "UPDATE_OPM_PRIV_KEY",
-        FWENTRY_UPDATE_TYPE.FWCLASS_GUID: "UPDATE_FWCLASS_GUID"
+        FWENTRY_UPDATE_TYPE.FWCLASS_GUID: "UPDATE_FWCLASS_GUID",
     }
 
     dBackupTypeByString = {
         "BACKUP_PARTITION": FWENTRY_BACKUP_TYPE.PARTITION,
-        "BACKUP_FAT_FILE": FWENTRY_BACKUP_TYPE.FAT_FILE
+        "BACKUP_FAT_FILE": FWENTRY_BACKUP_TYPE.FAT_FILE,
     }
 
     dBackupTypeByValue = {
         FWENTRY_BACKUP_TYPE.PARTITION: "BACKUP_PARTITION",
-        FWENTRY_BACKUP_TYPE.FAT_FILE: "BACKUP_FAT_FILE"
+        FWENTRY_BACKUP_TYPE.FAT_FILE: "BACKUP_FAT_FILE",
     }
 
-    XmlRawFwEntryList = deque()
-    QpayloadFwEntryList = deque()
+    XmlRawFwEntryList: deque = deque()
+    QpayloadFwEntryList: deque = deque()
     DeviceFlashType = None
     isMatchIdentifierInXML = False
