@@ -146,7 +146,7 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
 
 def sync_and_build_edk2_linux(edk2_dir_path, c_dir):
 
-    if platform.system() == "Linux":
+    if platform.system() in ("Linux", "Darwin"):
         edk2_get_repo_sync_stats = sync_edk2_linux(
             edk2_git_repo_sync_url, edk2_dir_path
         )
@@ -235,7 +235,7 @@ def force_delete_folder(folder_path):
             print(f"Failed to delete Dir {folder_path}")
             print(e)
 
-    if platform.system() == "Linux":
+    if platform.system() in ("Linux", "Darwin"):
         try:
             shutil.rmtree(folder_path)
             print(f"Dir deleted successfully: {folder_path}")
@@ -516,7 +516,7 @@ def print_stats(
 
 def Main(args):
 
-    if platform.system() == "Linux":
+    if platform.system() in ("Linux", "Darwin"):
         base_dir_abs = os.path.dirname(os.path.abspath(__file__))
         generate_capsule_py_file_path_abs = os.path.join(
             base_dir_abs, "GenerateCapsule.py"
