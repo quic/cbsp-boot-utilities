@@ -197,7 +197,7 @@ def GetSysFirmwareInfo(args):
             print("Invalid system firmware version file: {0}".format(SysBinPath))
             sys.exit(1)
 
-        if platform.system() == "Linux":
+        if platform.system() in ("Linux", "Darwin"):
             SysFwExePath = os.path.join(
                 os.path.dirname(os.path.abspath(__file__)), "SYSFW_VERSION_program.py"
             )
