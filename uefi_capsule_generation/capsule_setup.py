@@ -24,7 +24,6 @@ import validators
 
 edk2_branch = "edk2-stable202008"
 edk2_git_repo_sync_url = "https://github.com/tianocore/edk2.git"
-edk2_windows_base_tools_url = "https://github.com/tianocore/edk2-BaseTools-win32.git"
 generate_capsule_py_sync_url = (
     "https://raw.githubusercontent.com/tianocore"
     "/edk2/ef91b07388e1c0a50c604e5350eeda98428ccea6/BaseTools/Source/Python"
@@ -167,40 +166,31 @@ def sync_and_build_edk2_linux(edk2_dir_path, c_dir):
 ###
 
 
-def print_header_sync_edk2_win(clone_dir, git_command):
-    print("\n\n\n")
-    print("Copying edk2")
-    print(
-        "--------------------------------------------------------------"
-        "------------------------------------"
-    )
-    print(f"Github URL: {edk2_windows_base_tools_url}")
-    print(f"Clone local path: {clone_dir}")
-    print(f"git clone command: {git_command}")
-    print(
-        "--------------------------------------------------------------"
-        "------------------------------------"
-    )
-    print("\n\n")
-
-
 def sync_edk2_win(clone_dir):
+    """Clone edk2 on Windows using POSIX git via MSYS2/git-for-windows."""
 
     if os.path.exists(clone_dir):
-        print("\n\nedk2  found\n\n")
-        return "edk2  found"
+        print("\n\nedk2 found\n\n")
+        return "edk2 found"
 
-    # git_command = "git clone %s %s" % (edk2_git_repo_sync_url, clone_dir)
-    git_command = "git clone %s %s" % (edk2_windows_base_tools_url, clone_dir)
-    print_header_sync_edk2_win(clone_dir, git_command)
+    print_header_sync_edk2_linux(clone_dir)
 
     if not validators.url(edk2_git_repo_sync_url):
         print(f"Invalid URL: {edk2_git_repo_sync_url}")
-        print("Terminated copying edk2")
         return f"Invalid URL: {edk2_git_repo_sync_url}"
 
     try:
-        subprocess.run("cmd /c " + git_command, check=True)
+        subprocess.run(
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                edk2_git_repo_sync_url,
+                clone_dir,
+            ],
+            check=True,
+        )
         print("\n\n\nEdk2 cloning complete\n\n")
     except Exception:
         print("\n", traceback.format_exc())
@@ -210,61 +200,23 @@ def sync_edk2_win(clone_dir):
     return True
 
 
-def update_edk2_submodules_win(edk2_dir_path):
-    try:
-        os.chdir(edk2_dir_path)
-        subprocess.run(["git", "submodule", "update", "--init"], check=True)
-    except Exception:
-        print(
-            "Failed executing: subprocess.run("
-            "['git', 'submodule', 'update', '--init'], check=True)"
-        )
-        print(traceback.format_exc())
-        return False
-    return True
-
-
-def build_edk2(edk2_dir_path):
-
-    try:
-        os.chdir(edk2_dir_path)
-        subprocess.run(["edksetup.bat", "Rebuild"], check=True)
-    except Exception:
-        print(
-            "Failed executing: subprocess.run(['edksetup.bat', 'Rebuild'], check=True)"
-        )
-        print(traceback.format_exc())
-        return "Failed to build edk2"
-    return True
-
-
-def build_edk2_win(edk2_dir_path, full_build):
-
-    base_dir = os.path.dirname(os.path.abspath(__file__))
-    os.chdir(edk2_dir_path)
-
-    if full_build:
-        if not update_edk2_submodules_win(edk2_dir_path):
-            os.chdir(base_dir)
-            return "Failed to sync submodules"
-    else:
-        print("\n\nFull build not enabled, skipping submodules sync\n\n")
-
-    if not build_edk2(edk2_dir_path):
-        os.chdir(base_dir)
-        return "Failed to build Edk2"
-
-    os.chdir(base_dir)
-    print("\n\nEdk2 build complete\n\n\n")
-    return True
-
-
 def sync_and_build_edk2_win(clone_dir, full_build):
+    """Sync and build edk2 BaseTools C on Windows via MSYS2 (make + gcc)."""
 
     if platform.system() == "Windows":
         edk2_get_repo_sync_stats = sync_edk2_win(clone_dir)
         if edk2_get_repo_sync_stats is not True:
             return edk2_get_repo_sync_stats
+
+        if init_brotli_submodule(clone_dir) is not True:
+            return "Failed to init brotli submodule"
+
+        c_dir = os.path.join(clone_dir, "BaseTools", "Source", "C")
+        edk2_build_stats = run_make_command_linux(c_dir)
+        if edk2_build_stats is not True:
+            return edk2_build_stats
+
+    return True
 
 
 ###
@@ -616,8 +568,9 @@ def Main(args):
             base_dir_abs, "GenerateCapsule.py"
         )
         edk2_sync_local_path_abs = os.path.join(base_dir_abs, "edk2")
-        genffs_sync_path_win_abs = os.path.join(edk2_sync_local_path_abs, "GenFfs.exe")
-        genfv_sync_path_win_abs = os.path.join(edk2_sync_local_path_abs, "GenFv.exe")
+        c_dir = os.path.join(edk2_sync_local_path_abs, "BaseTools", "Source", "C")
+        genffs_sync_path_win_abs = os.path.join(c_dir, "bin", "GenFfs.exe")
+        genfv_sync_path_win_abs = os.path.join(c_dir, "bin", "GenFv.exe")
         genffs_local_path_abs = os.path.join(base_dir_abs, "GenFfs.exe")
         genfv_local_path_abs = os.path.join(base_dir_abs, "GenFv.exe")
         common_dir_local_sync_path_abs = os.path.join(base_dir_abs, "Common")
