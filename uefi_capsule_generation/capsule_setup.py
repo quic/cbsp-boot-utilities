@@ -34,6 +34,7 @@ basetools_common_sync_url = (
     "https://github.com/tianocore/edk2/tree/"
     "edk2-stable202008/BaseTools/Source/Python/Common"
 )
+BROTLI_SUBMODULE_PATH = "BaseTools/Source/C/BrotliCompress/brotli"
 
 
 ###
@@ -62,7 +63,8 @@ def run_make_command_linux(edk2_dir_path):
     return True
 
 
-def update_edk2_submodules_linux(edk2_dir_path):
+def init_brotli_submodule(edk2_dir_path):
+    """Initialize only the brotli submodule needed by the BaseTools C build."""
 
     if not os.path.exists(edk2_dir_path):
         print(f"\n\nDirectory '{edk2_dir_path}' does not exist\n\n")
@@ -73,24 +75,24 @@ def update_edk2_submodules_linux(edk2_dir_path):
 
     try:
         subprocess.run(
-            ["git", "submodule", "update", "--init", "--recursive"], check=True
+            [
+                "git",
+                "submodule",
+                "update",
+                "--init",
+                "--depth",
+                "1",
+                BROTLI_SUBMODULE_PATH,
+            ],
+            check=True,
         )
     except Exception:
-        print(
-            "\n\nFailed executing: subprocess.run("
-            "['git', 'submodule', 'update', '--init', '--recursive'],"
-            " check=True)\n\n"
-        )
+        print("\n\nFailed initializing brotli submodule\n\n")
         print(traceback.format_exc())
-
-        return (
-            "Failed executing: subprocess.run("
-            "['git', 'submodule', 'update', '--init', '--recursive'],"
-            "check=True)"
-        )
+        return "Failed initializing brotli submodule"
 
     os.chdir(base_dir)
-    print("initialization done")
+    print("brotli submodule initialization done")
     return True
 
 
@@ -120,7 +122,15 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
 
     try:
         subprocess.run(
-            ["git", "clone", edk2_git_repo_sync_url, edk2_dir_path], check=True
+            [
+                "git",
+                "clone",
+                "--depth",
+                "1",
+                edk2_git_repo_sync_url,
+                edk2_dir_path,
+            ],
+            check=True,
         )
         print(f"Repository cloned into {edk2_dir_path}")
 
@@ -128,9 +138,9 @@ def sync_edk2_linux(edk2_git_repo_sync_url, edk2_dir_path):
         print(f"Error cloning repository: {e}")
         return "Error cloning repository"
 
-    if update_edk2_submodules_linux(edk2_dir_path) is not True:
-        print("Failed to sync submodules")
-        return "Failed to sync submodules"
+    if init_brotli_submodule(edk2_dir_path) is not True:
+        print("Failed to init brotli submodule")
+        return "Failed to init brotli submodule"
 
     return True
 
