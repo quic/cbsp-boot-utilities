@@ -49,14 +49,7 @@ QcFMPRoot.pub.pem
 QcFMPSub.pub.pem
 ```
 
-The `QcFMPRoot.cer` (or `NewRoot.cer`) should be converted to a hex value and
-provided in the BOOT DT [will be part of `xbl_config.elf`] at node
-`/sw/uefi/uefiplat/QcCapsuleRootCert` using QDTE tool.
-
-For more information on the QDTE Tool, refer to the
-[QDTE Tool documentation][qdte-tool].
-
-[qdte-tool]: https://docs.qualcomm.com/bundle/publicresource/topics/80-70017-4/tools.html?vproduct=1601111740013072&version=1.3&facet=Boot#qdte
+The `QcFMPRoot.cer` (or `NewRoot.cer`) should be converted to a hex value.
 
 Use `BinToHex.py` to convert `NewRoot.cer` to a Hex value:
 
@@ -67,10 +60,26 @@ Usage:
 BintoHex.py  <InputFile> <OutputFile>
 ```
 
-This `NewRoot.inc` contains the cert value, which needs to be provided in the
-Boot DT at `/sw/uefi/uefiplat/QcCapsuleRootCert` (using QDTE tool).
+This `NewRoot.inc` contains the cert value, which needs to be provided in the BOOT DT [will be part of `xbl_config.elf`] for QCS6490,QCS9100,QCS8300,QCS615 or in UEFI DT [will be part of `uefi_dtbs.elf`] for IQ-X7181,IQ-X5121,Kaanapali,SM8750,QRB2210-RB1,CQ2390M targets at node
+`/sw/uefi/uefiplat/QcCapsuleRootCert` using QDTE tool.
 
-### 3.2 Setting QcCapsuleRootCert Without QDTE
+For more information on the QDTE Tool, refer to the
+[QDTE Tool documentation][qdte-tool].
+
+[qdte-tool]: https://docs.qualcomm.com/bundle/publicresource/topics/80-70017-4/tools.html?vproduct=1601111740013072&version=1.3&facet=Boot#qdte
+
+
+*Please Note - for QLI Hamoa/Purwa uefi_dtbs.elf needs to compressed using xz tool and then flashed.
+```
+xz -k uefi_dtbs.elf
+
+Usage:
+xz -k  <InputFile>
+-k : to keep the original uncompressed file
+```
+
+
+### 3.2 Setting QcCapsuleRootCert Without QDTE (for targets - QCS6490, QCS9100, QCS8300, QCS615)
 
 As an alternative to QDTE, you can patch the certificate directly into
 `xbl_config.elf` using `xblconfig_parser.py` and `set_dtb_property.py`.
@@ -150,6 +159,8 @@ git clone https://github.com/quic/cbsp-boot-utilities.git
 
 1. **Generate/Update FvUpdate.xml with Firmware entries:**
 
+  * For targets IQ-X7181-EVK, IQ-X5121, Kaanapali-MTP, SM8750-MTP - Manually update FvUpdate.xml (UpdateFvXml.py not supported yet)
+
    This script generates the `FvUpdate.xml` file with firmware entries:
 
    ```sh
@@ -226,6 +237,14 @@ git clone https://github.com/quic/cbsp-boot-utilities.git
    - QCS9100 ESRT GUID: `78462415-6133-431C-9FAE-48F2BAFD5C71`
    - QCS8300 ESRT GUID: `8BF4424F-E842-409C-80BE-1418E91EF343`
    - QCS615 ESRT GUID: `9FD379D2-670E-4BB3-86A1-40497E6E17B0`
+   - QRB2210-RB1 ESRT GUID: `A2C156D8-ABBF-49B4-9F3D-8C13-4DDE-977B`
+   - CQ2390M ESRT GUID: `BD3276F4-219C-452F-9E59-B15D8F242B75`
+   - IQ-X7181 ESRT GUID: `0F6D58FC-2258-4D27-9E23-D77219B0897C`
+   - IQ-X5121 ESRT GUID: `185A798B-13B2-4595-BD08-E2770A4BB190`
+   - Kaanapali ESRT GUID: `2153308F-BE7C-404A-8605-1FF25E8703B9`
+   - SM8750 ESRT GUID: `3409BE01-F1F6-40C2-9336-192FD96606F4`
+   
+
 
 2. **Generate the Capsule File:**
 
