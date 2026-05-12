@@ -12,6 +12,8 @@
 #FlashType
   UFS
   EMMC
+  NORNVME
+  NORUFS
 
 
 #Operation Type
@@ -28,7 +30,7 @@
   UFS_LUN5                 (Not supported)
   UFS_LUN6                 (Not supported)
   UFS_LUN7                 (Not supported)
-  SPINOR                   (Not supported)
+  SPINOR                   (Supported)
   NVME                     (Not supported)
   EMMC_PARTITION_USER_DATA (Supported)
 
