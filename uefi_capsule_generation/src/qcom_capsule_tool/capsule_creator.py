@@ -21,7 +21,7 @@ def run_command(command, fail_on_error=False):
         exit(1)
 
 
-def main(args):
+def _run(args):
 
     if args.setup:
         run_command("python3 capsule_setup.py", fail_on_error=True)
@@ -65,7 +65,7 @@ def main(args):
         )
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Combined script for Capsule generation"
     )
@@ -107,4 +107,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args)
+    _run(args)
+
+
+if __name__ == "__main__":
+    main()

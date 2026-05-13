@@ -334,6 +334,10 @@ def UpdateJsonFile(args):
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def main():
     args = ParseArguments()
     UpdateJsonFile(args)
+
+
+if __name__ == "__main__":
+    main()

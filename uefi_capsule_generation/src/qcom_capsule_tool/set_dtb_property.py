@@ -103,12 +103,17 @@ def set_dtb_property(
     print(f"[+] Updated '{prop_name}' at '{node_path}', written to {out_path}")
 
 
-if __name__ == "__main__":
+def main():
     if len(sys.argv) != 6:
         print(
-            f"Usage: {sys.argv[0]} <input.dtb> <node_path> <property> <value|@file:path|@list:path> <output.dtb>"
+            "Usage: qcom-capsule-tool set-dtb-property <input.dtb> <node_path>"
+            " <property> <value|@file:path|@list:path> <output.dtb>"
         )
         sys.exit(1)
 
     input_dtb, node_path, prop_name, value, output_dtb = sys.argv[1:]
     set_dtb_property(input_dtb, node_path, prop_name, value, output_dtb)
+
+
+if __name__ == "__main__":
+    main()

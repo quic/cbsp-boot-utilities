@@ -620,7 +620,7 @@ def Main(args):
         )
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         prog=__prog__,
         description="VERSION: " + __version__ + ", " + __description__,
@@ -651,3 +651,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     Main(args)
+
+
+if __name__ == "__main__":
+    main()
