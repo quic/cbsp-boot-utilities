@@ -17,9 +17,9 @@ import traceback
 import uuid
 from enum import Enum
 
-import FVCreation_header as FVC_h
-import XmlFwEntryValidation as XFEV
-import XmlParser as xp
+from . import FVCreation_header as FVC_h
+from . import XmlFwEntryValidation as XFEV
+from . import XmlParser as xp
 
 print_logs = 0
 
@@ -158,18 +158,6 @@ def CalcCRC32_i(buffer_b, l_i):
     return Reflect(regs_i, 32) ^ int(0xFFFFFFFF)
 
 
-def execute_command(s_command):
-    try:
-        result = subprocess.run(
-            ["cmd", "/c", s_command], capture_output=True, text=True, shell=True
-        )
-        print(result.stdout)
-        if result.stderr:
-            print(result.stderr)
-    except Exception as e:
-        print(f"Exception running command: {e}\n")
-
-
 def execute_command_linux(s_command):
     try:
         result = subprocess.run(s_command, capture_output=True, text=True, shell=True)
@@ -180,17 +168,29 @@ def execute_command_linux(s_command):
         print(f"Exception running command: {e}\n")
 
 
+def _default_edk2_tools_dir():
+    """Return the default edk2 tools directory ($PWD/edk2/BaseTools/Source/C/bin)."""
+    return os.path.join(os.getcwd(), "edk2", "BaseTools", "Source", "C", "bin")
+
+
 def _resolve_tools_dir(tool_name):
-    """Prefer PATH lookup; fall back to the script directory."""
+    """Prefer PATH lookup; fall back to $PWD/edk2/BaseTools/Source/C/bin."""
     found = shutil.which(tool_name)
     if found:
         return os.path.dirname(found)
-    return os.path.dirname(os.path.realpath(__file__))
+    return _default_edk2_tools_dir()
+
+
+def _tool_path(tools_dir, name):
+    """Return the full path to an edk2 BaseTools binary, with .exe on Windows."""
+    if platform.system() == "Windows" and not name.endswith(".exe"):
+        name = name + ".exe"
+    return os.path.join(tools_dir, name)
 
 
 def regenerate_all_executables():
     ls_executables = []
-    cur_directory = os.path.dirname(os.path.abspath(__file__))
+    cur_directory = os.getcwd()
     resource_files = [
         f
         for f in os.listdir(cur_directory)
@@ -256,17 +256,10 @@ def generate_fv(s_output_file_name, ls_ffs, s_gen_fv, tools_dir=None):
         print(f"ERROR: Failure creating {FV_MAIN_INF_NAME} file.")
         return False
 
-    if platform.system() == "Linux":
-        if tools_dir is None:
-            tools_dir = _resolve_tools_dir("GenFv")
-        sFVCommand = (
-            f"{tools_dir}/GenFv -o {s_output_file_name} -i {FV_MAIN_INF_NAME} -v"
-        )
-        execute_command_linux(sFVCommand)
-
-    if platform.system() == "Windows":
-        sFVCommand = f"{s_gen_fv} -o {s_output_file_name} -i {FV_MAIN_INF_NAME} -v"
-        execute_command(sFVCommand)
+    if tools_dir is None:
+        tools_dir = _resolve_tools_dir("GenFv")
+    sFVCommand = f"{_tool_path(tools_dir, 'GenFv')} -o {s_output_file_name} -i {FV_MAIN_INF_NAME} -v"
+    execute_command_linux(sFVCommand)
 
     if not os.path.exists(s_output_file_name):
         bReturn = False
@@ -615,29 +608,14 @@ def generate_sys_fw_ffs_list(
 
             print(f"INFO: Creating ffs file for {raw_fwentry.InputBinary}.")
 
-            #
-            # execute GenFfs in Linux
-            #
-            if platform.system() == "Linux":
-                if tools_dir is None:
-                    tools_dir = _resolve_tools_dir("GenFfs")
-                raw_fwentry_FileGuid_uuid_bytes_obj = bytes(raw_fwentry.FileGuid)
-                raw_fwentry_FileGuid_uuid_str = str(
-                    uuid.UUID(bytes=raw_fwentry_FileGuid_uuid_bytes_obj)
-                )
-                s_command = f"{tools_dir}/GenFfs -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {raw_fwentry_FileGuid_uuid_str} -s -v -i {os.path.join(s_dir_path, raw_fwentry.InputBinary)}"
-                execute_command_linux(s_command)
-
-            #
-            # execute GenFfs in Windows
-            #
-            if platform.system() == "Windows":
-                raw_fwentry_FileGuid_uuid_bytes_obj = bytes(raw_fwentry.FileGuid)
-                raw_fwentry_FileGuid_uuid_str = str(
-                    uuid.UUID(bytes=raw_fwentry_FileGuid_uuid_bytes_obj)
-                )
-                s_command = f"{s_gen_ffs} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {raw_fwentry_FileGuid_uuid_str} -s -v -i {os.path.join(s_dir_path, raw_fwentry.InputBinary)}"
-                execute_command(s_command)
+            if tools_dir is None:
+                tools_dir = _resolve_tools_dir("GenFfs")
+            raw_fwentry_FileGuid_uuid_bytes_obj = bytes(raw_fwentry.FileGuid)
+            raw_fwentry_FileGuid_uuid_str = str(
+                uuid.UUID(bytes=raw_fwentry_FileGuid_uuid_bytes_obj)
+            )
+            s_command = f"{_tool_path(tools_dir, 'GenFfs')} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {raw_fwentry_FileGuid_uuid_str} -s -v -i {os.path.join(s_dir_path, raw_fwentry.InputBinary)}"
+            execute_command_linux(s_command)
 
             ls_ffs.append(s_file_name + ".ffs")
 
@@ -645,15 +623,10 @@ def generate_sys_fw_ffs_list(
         s_guid = FVC_h.GlobalStaticVariable.FILE_GUID_METADATA_GUID.strip("{}")
 
         print(f"INFO: Creating ffs file for {SYS_FW_METADATA_FILE}.")
-        if platform.system() == "Linux":
-            if tools_dir is None:
-                tools_dir = _resolve_tools_dir("GenFfs")
-            s_command = f"{tools_dir}/GenFfs -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {s_guid} -s -v -i {SYS_FW_METADATA_FILE}"
-            execute_command_linux(s_command)
-
-        if platform.system() == "Windows":
-            s_command = f"{s_gen_ffs} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {s_guid} -s -v -i {SYS_FW_METADATA_FILE}"
-            execute_command(s_command)
+        if tools_dir is None:
+            tools_dir = _resolve_tools_dir("GenFfs")
+        s_command = f"{_tool_path(tools_dir, 'GenFfs')} -o {s_file_name}.ffs -t EFI_FV_FILETYPE_RAW -g {s_guid} -s -v -i {SYS_FW_METADATA_FILE}"
+        execute_command_linux(s_command)
 
         ls_ffs.append(s_file_name + ".ffs")
 
@@ -736,10 +709,7 @@ def The_Main(args):
     for i, arg in enumerate(args):
         if arg in ("--edk2-path", "-edk2path") and i + 1 < len(args):
             edk2_path = args[i + 1]
-            if platform.system() == "Linux":
-                tools_dir = os.path.join(edk2_path, "BaseTools", "Source", "C", "bin")
-            elif platform.system() == "Windows":
-                tools_dir = edk2_path
+            tools_dir = os.path.join(edk2_path, "BaseTools", "Source", "C", "bin")
             del args[i : i + 2]
             break
 
@@ -790,22 +760,14 @@ def The_Main(args):
     else:
         print("FV created successfully")
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    test = os.listdir(dir_path)
-    for file in test:
-        if file.endswith(".ffs"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".inf"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".fv.txt"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".fv.map"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".dat"):
-            os.remove(os.path.join(dir_path, file))
+    for file in os.listdir("."):
+        if file.endswith((".ffs", ".inf", ".fv.txt", ".fv.map", ".dat")):
+            os.remove(file)
+
+
+def main():
+    The_Main(args=sys.argv[1:])
 
 
 if __name__ == "__main__":
-    args = sys.argv
-    del args[0]
-    The_Main(args=args)
+    main()

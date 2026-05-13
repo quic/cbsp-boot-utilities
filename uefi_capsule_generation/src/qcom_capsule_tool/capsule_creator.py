@@ -21,7 +21,7 @@ def run_command(command, fail_on_error=False):
         exit(1)
 
 
-def main(args):
+def _run(args):
 
     if args.setup:
         run_command("python3 capsule_setup.py", fail_on_error=True)
@@ -45,27 +45,20 @@ def main(args):
         f"python3 UpdateJsonParameters.py -j {args.config} -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv -p {args.p} -x {args.x} -oc {args.oc} -g {args.guid}"
     )
 
-    # Step 5: Generate capsule
-    if args.edk2_path:
-        generate_capsule = os.path.join(
-            args.edk2_path,
-            "BaseTools",
-            "Source",
-            "Python",
-            "Capsule",
-            "GenerateCapsule.py",
-        )
-        pythonpath = os.path.join(args.edk2_path, "BaseTools", "Source", "Python")
-        run_command(
-            f"PYTHONPATH={pythonpath} python3 {generate_capsule} -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
-        )
-    else:
-        run_command(
-            f"python3 GenerateCapsule.py -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
-        )
+    # Step 5: Generate capsule. Resolve edk2 path explicitly so we never depend
+    # on cwd-relative GenerateCapsule.py copies; default to $PWD/edk2 (where
+    # `qcom-capsule-tool setup` clones it).
+    edk2 = args.edk2_path if args.edk2_path else os.path.join(os.getcwd(), "edk2")
+    generate_capsule = os.path.join(
+        edk2, "BaseTools", "Source", "Python", "Capsule", "GenerateCapsule.py"
+    )
+    pythonpath = os.path.join(edk2, "BaseTools", "Source", "Python")
+    run_command(
+        f"PYTHONPATH={pythonpath} python3 {generate_capsule} -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
+    )
 
 
-if __name__ == "__main__":
+def main():
     parser = argparse.ArgumentParser(
         description="Combined script for Capsule generation"
     )
@@ -107,4 +100,8 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    main(args)
+    _run(args)
+
+
+if __name__ == "__main__":
+    main()

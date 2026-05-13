@@ -1,0 +1,34 @@
+[build-system]
+requires = ["poetry-core>=1.5"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "qcom-capsule-tool"
+version = "1.0.0"
+description = "Qualcomm capsule generation tools for UEFI firmware updates"
+license = "BSD-3-Clause-Clear"
+authors = ["Qualcomm Innovation Center <noreply@qualcomm.com>"]
+packages = [{ include = "qcom_capsule_tool", from = "src" }]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+requests = "*"
+pyelftools = "*"
+pylibfdt = "*"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "*"
+mypy = "*"
+types-requests = "*"
+
+[tool.poetry.scripts]
+qcom-capsule-tool = "qcom_capsule_tool.cli:main"
+
+[tool.mypy]
+python_version = "3.9"
+
+# Third-party deps without type stubs or py.typed markers. Silence
+# mypy's import-untyped error rather than wrapping each call site.
+[[tool.mypy.overrides]]
+module = ["libfdt", "elftools.*"]
+ignore_missing_imports = true

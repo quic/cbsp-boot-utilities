@@ -12,10 +12,8 @@
 import argparse
 import json
 import os
-import platform
 import subprocess
 import sys
-import traceback
 from collections import OrderedDict
 
 
@@ -156,39 +154,7 @@ def GetEcFirmwareInfo(args):
         sys.exit(1)
 
 
-def get_python_version():
-    python_version = None
-    try:
-        output = subprocess.check_output(["python", "--version"]).decode().strip()
-        python_version_l = output.split(" ")
-        python_version_no = int(python_version_l[1].split(".")[0])
-
-        if python_version_no == 3:
-            python_version = "python"
-    except Exception:
-        print("'python --version' command failed to execute at command line")
-
-    if python_version is None:
-        try:
-            output = subprocess.check_output(["python3", "--version"]).decode().strip()
-            python_version_op_l = output.split(" ")
-            python_version_no = int(python_version_op_l[1].split(".")[0])
-            if python_version_no == 3:
-                python_version = "python3"
-        except Exception:
-            print("'python3 --version' command failed to execute at command line")
-
-    if python_version is None:
-        print("ERROR 'python --version' and python")
-        return None
-
-    print("python_version: ", python_version)
-
-    return python_version
-
-
 def GetSysFirmwareInfo(args):
-    python_version = get_python_version()
     commands = ["-GetFwVersionHex", "-GetLSFwVersionHex"]
     SysBinPath = args.BinFile
     try:
@@ -197,69 +163,36 @@ def GetSysFirmwareInfo(args):
             print("Invalid system firmware version file: {0}".format(SysBinPath))
             sys.exit(1)
 
-        if platform.system() == "Linux":
-            SysFwExePath = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "SYSFW_VERSION_program.py"
-            )
-            if not os.path.exists(SysFwExePath):
-                print("SYSFW_VERSION_program.py not found at: {0}".format(SysFwExePath))
+        # Call SYSFW_VERSION_program to extract the firmware version and lowest
+        # supported version. Invoke as a module so it resolves correctly when
+        # qcom-capsule-tool is installed via pip/pipx (no __file__ assumptions).
+        results = []
+        for cmd in commands:
+            try:
+                output = (
+                    subprocess.check_output(
+                        [
+                            sys.executable,
+                            "-m",
+                            "qcom_capsule_tool.SYSFW_VERSION_program",
+                            cmd,
+                            SysBinPath,
+                        ]
+                    )
+                    .decode()
+                    .strip()
+                )
+                results.append(output)
+            except Exception as e:
+                print("Failed to execute command:{0}. Error: {1}".format(cmd, (e)))
                 sys.exit(1)
 
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest
-            # supported version
-            results = []
-            for cmd in commands:
-                try:
-                    output = (
-                        subprocess.check_output(
-                            [python_version, SysFwExePath, cmd, SysBinPath]
-                        )
-                        .decode()
-                        .strip()
-                    )
-                    results.append(output)
-                except Exception as e:
-                    print("Failed to execute command:{0}. Error: {1}".format(cmd, (e)))
-                    sys.exit(1)
-
-            (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
-            print(
-                "Firmware Version is {0}, lowest supported version: {1}".format(
-                    args.FwVersion, args.LowestSupportedVersion
-                )
+        (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
+        print(
+            "Firmware Version is {0}, lowest supported version: {1}".format(
+                args.FwVersion, args.LowestSupportedVersion
             )
-
-        if platform.system() == "Windows":
-            SysFwExePath = os.path.join(
-                os.path.dirname(os.path.abspath(__file__)), "SYSFW_VERSION_program.py"
-            )
-            if not os.path.exists(SysFwExePath):
-                print("SYSFW_VERSION_program.py not found at: {0}".format(SysFwExePath))
-                sys.exit(1)
-
-            # Call SysFwVersion.exe tool to extract the firmware version and lowest
-            # supported version
-            results = []
-            for cmd in commands:
-                try:
-                    output = (
-                        subprocess.check_output(
-                            [python_version, SysFwExePath, cmd, SysBinPath]
-                        )
-                        .decode()
-                        .strip()
-                    )
-                    results.append(output)
-                except Exception as e:
-                    print("Failed to execute command:{0}. Error: {1}".format(cmd, (e)))
-                    print(traceback.format_exc())
-
-            (args.FwVersion, args.LowestSupportedVersion) = (results[0], results[1])
-            print(
-                "Firmware Version is {0}, lowest supported version: {1}".format(
-                    args.FwVersion, args.LowestSupportedVersion
-                )
-            )
+        )
 
     except subprocess.CalledProcessError as e:
         print("Failed to extract firmware info from sys.bin: {0}".format(e))
@@ -292,7 +225,7 @@ def UpdateJsonFile(args):
         sys.exit(1)
 
     JsonFile = args.JsonFile
-    JsonFilePath = os.path.join(os.path.dirname(os.path.abspath(__file__)), JsonFile)
+    JsonFilePath = os.path.abspath(JsonFile)
     JsonFilePathCheckCount = 0
 
     while not os.path.exists(JsonFilePath) and (JsonFilePathCheckCount < 5):
@@ -334,6 +267,10 @@ def UpdateJsonFile(args):
         sys.exit(1)
 
 
-if __name__ == "__main__":
+def main():
     args = ParseArguments()
     UpdateJsonFile(args)
+
+
+if __name__ == "__main__":
+    main()
