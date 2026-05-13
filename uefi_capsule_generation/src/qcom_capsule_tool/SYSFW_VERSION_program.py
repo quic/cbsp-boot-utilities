@@ -284,9 +284,7 @@ def generate_binary_file(args):
     FwVerBinaryData.VersionDataCrc32 = CalcCRC32_i(
         FwVerBinaryData.to_bytes(), FwVerBinaryData.VersionDataSize
     )
-    output_file_path = os.path.join(
-        os.path.dirname(os.path.abspath(sys.argv[0])), FileName
-    )
+    output_file_path = os.path.join(os.getcwd(), FileName)
 
     with open(output_file_path, "wb") as fw_file:
         fw_file.write(FwVerBinaryData.to_bytes())
@@ -303,7 +301,7 @@ def get_fw_version_hex(args):
         print("ERROR: Value to the parameter -GetFwVersionHex is not specified")
         return False
 
-    FilePath = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), FileName)
+    FilePath = os.path.join(os.getcwd(), FileName)
 
     with open(FilePath, mode="rb") as file:
         file_content = file.read()
@@ -321,7 +319,7 @@ def get_ls_version_hex(args):
         print("ERROR: Value to the parameter -GetLSFwVersionHex is not specified")
         return False
 
-    FilePath = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), FileName)
+    FilePath = os.path.join(os.getcwd(), FileName)
 
     with open(FilePath, mode="rb") as file:
         file_content = file.read()
@@ -339,7 +337,7 @@ def print_bin_contents(args):
         print("ERROR: Value to the parameter -PrintAll is not specified")
         return False
 
-    FilePath = os.path.join(os.path.dirname(os.path.abspath(sys.argv[0])), FileName)
+    FilePath = os.path.join(os.getcwd(), FileName)
 
     with open(FilePath, mode="rb") as file:
         file_content = file.read()
@@ -389,7 +387,7 @@ def ViewBinaryFile(ConfigurationHelper):
             )
             return False
 
-    if not os.path.join(os.path.dirname(os.path.abspath(__file__)), InputBinPath):
+    if not os.path.exists(os.path.join(os.getcwd(), InputBinPath)):
         print(
             "ViewBinaryFile :: ERROR: Provided input file does not exist in given directory"
         )

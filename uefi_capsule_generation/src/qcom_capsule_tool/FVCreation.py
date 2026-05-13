@@ -168,12 +168,17 @@ def execute_command_linux(s_command):
         print(f"Exception running command: {e}\n")
 
 
+def _default_edk2_tools_dir():
+    """Return the default edk2 tools directory ($PWD/edk2/BaseTools/Source/C/bin)."""
+    return os.path.join(os.getcwd(), "edk2", "BaseTools", "Source", "C", "bin")
+
+
 def _resolve_tools_dir(tool_name):
-    """Prefer PATH lookup; fall back to the script directory."""
+    """Prefer PATH lookup; fall back to $PWD/edk2/BaseTools/Source/C/bin."""
     found = shutil.which(tool_name)
     if found:
         return os.path.dirname(found)
-    return os.path.dirname(os.path.realpath(__file__))
+    return _default_edk2_tools_dir()
 
 
 def _tool_path(tools_dir, name):
@@ -185,7 +190,7 @@ def _tool_path(tools_dir, name):
 
 def regenerate_all_executables():
     ls_executables = []
-    cur_directory = os.path.dirname(os.path.abspath(__file__))
+    cur_directory = os.getcwd()
     resource_files = [
         f
         for f in os.listdir(cur_directory)
@@ -755,19 +760,9 @@ def The_Main(args):
     else:
         print("FV created successfully")
 
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    test = os.listdir(dir_path)
-    for file in test:
-        if file.endswith(".ffs"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".inf"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".fv.txt"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".fv.map"):
-            os.remove(os.path.join(dir_path, file))
-        if file.endswith(".dat"):
-            os.remove(os.path.join(dir_path, file))
+    for file in os.listdir("."):
+        if file.endswith((".ffs", ".inf", ".fv.txt", ".fv.map", ".dat")):
+            os.remove(file)
 
 
 def main():

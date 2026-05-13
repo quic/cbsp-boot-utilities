@@ -45,24 +45,17 @@ def _run(args):
         f"python3 UpdateJsonParameters.py -j {args.config} -f SYS_FW -b SYSFW_VERSION.bin -pf firmware.fv -p {args.p} -x {args.x} -oc {args.oc} -g {args.guid}"
     )
 
-    # Step 5: Generate capsule
-    if args.edk2_path:
-        generate_capsule = os.path.join(
-            args.edk2_path,
-            "BaseTools",
-            "Source",
-            "Python",
-            "Capsule",
-            "GenerateCapsule.py",
-        )
-        pythonpath = os.path.join(args.edk2_path, "BaseTools", "Source", "Python")
-        run_command(
-            f"PYTHONPATH={pythonpath} python3 {generate_capsule} -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
-        )
-    else:
-        run_command(
-            f"python3 GenerateCapsule.py -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
-        )
+    # Step 5: Generate capsule. Resolve edk2 path explicitly so we never depend
+    # on cwd-relative GenerateCapsule.py copies; default to $PWD/edk2 (where
+    # `qcom-capsule-tool setup` clones it).
+    edk2 = args.edk2_path if args.edk2_path else os.path.join(os.getcwd(), "edk2")
+    generate_capsule = os.path.join(
+        edk2, "BaseTools", "Source", "Python", "Capsule", "GenerateCapsule.py"
+    )
+    pythonpath = os.path.join(edk2, "BaseTools", "Source", "Python")
+    run_command(
+        f"PYTHONPATH={pythonpath} python3 {generate_capsule} -e -j {args.config} -o {args.capsule} --capflag PersistAcrossReset -v"
+    )
 
 
 def main():

@@ -48,17 +48,40 @@ BROTLI_SUBMODULE_PATH = "BaseTools/Source/C/BrotliCompress/brotli"
 ###
 
 
+def _make_env():
+    """Return env for invoking edk2 BaseTools `make`.
+
+    Two things need to be fixed up for MSYS2 builds:
+
+    1. edk2's GNUmakefile checks `OS=Windows_NT` (which MSYS2 inherits
+       from Windows) and, when matched, forces `SHELL := cmd.exe` and
+       switches to nmake-style cmd recipes. Clearing OS makes the
+       makefile take the POSIX path so recipes run under MSYS2's bash.
+
+    2. edk2's HOST_ARCH autodetection also branches on OS=Windows and
+       uses cmd-style `if defined ...` syntax that fails under sh. Pass
+       HOST_ARCH explicitly so the autodetection block is skipped.
+    """
+    env = os.environ.copy()
+    if platform.system() == "Windows":
+        env.pop("OS", None)
+        if "HOST_ARCH" not in env:
+            machine = platform.machine().lower()
+            env["HOST_ARCH"] = "AARCH64" if machine in ("aarch64", "arm64") else "X64"
+    return env
+
+
 def run_make_command_linux(edk2_dir_path):
 
     if not os.path.exists(edk2_dir_path) or not os.path.isdir(edk2_dir_path):
         print(f"\n\nDirectory '{edk2_dir_path}' does not exist.\n\n")
         return f"Directory '{edk2_dir_path}' does not exist."
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.getcwd()
 
     try:
         os.chdir(edk2_dir_path)
-        subprocess.run(["make"], check=True)
+        subprocess.run(["make"], check=True, env=_make_env())
     except Exception:
         print("\n", traceback.format_exc())
         print("\nFailed to build edk2\n\n")
@@ -76,7 +99,7 @@ def init_brotli_submodule(edk2_dir_path):
         print(f"\n\nDirectory '{edk2_dir_path}' does not exist\n\n")
         return f"Directory '{edk2_dir_path}' does not exist"
 
-    base_dir = os.path.dirname(os.path.abspath(__file__))
+    base_dir = os.getcwd()
     os.chdir(edk2_dir_path)
 
     try:
@@ -524,7 +547,7 @@ def print_stats(
 def Main(args):
 
     if platform.system() in ("Linux", "Darwin"):
-        base_dir_abs = os.path.dirname(os.path.abspath(__file__))
+        base_dir_abs = os.getcwd()
         generate_capsule_py_file_path_abs = os.path.join(
             base_dir_abs, "GenerateCapsule.py"
         )
@@ -570,7 +593,7 @@ def Main(args):
         )
 
     if platform.system() == "Windows":
-        base_dir_abs = os.path.dirname(os.path.abspath(__file__))
+        base_dir_abs = os.getcwd()
         generate_capsule_py_file_path_abs = os.path.join(
             base_dir_abs, "GenerateCapsule.py"
         )
