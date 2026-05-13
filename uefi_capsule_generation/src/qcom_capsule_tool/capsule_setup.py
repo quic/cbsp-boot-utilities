@@ -18,9 +18,16 @@ import platform
 import shutil
 import subprocess
 import traceback
+from urllib.parse import urlparse
 
 import requests
-import validators
+
+
+def _is_http_url(url):
+    """Return True if `url` looks like a syntactically valid http(s) URL."""
+    parsed = urlparse(url)
+    return parsed.scheme in ("http", "https") and bool(parsed.netloc)
+
 
 edk2_branch = "edk2-stable202008"
 edk2_git_repo_sync_url = "https://github.com/tianocore/edk2.git"
@@ -175,7 +182,7 @@ def sync_edk2_win(clone_dir):
 
     print_header_sync_edk2_linux(clone_dir)
 
-    if not validators.url(edk2_git_repo_sync_url):
+    if not _is_http_url(edk2_git_repo_sync_url):
         print(f"Invalid URL: {edk2_git_repo_sync_url}")
         return f"Invalid URL: {edk2_git_repo_sync_url}"
 
@@ -281,7 +288,7 @@ def sync_generate_capsule_py(
 
     print_header_sync_generate_capsule_py(generate_capsule_py_file_path_abs)
 
-    if not validators.url(generate_capsule_py_sync_url):
+    if not _is_http_url(generate_capsule_py_sync_url):
         print(f"Invalid URL: {generate_capsule_py_sync_url}")
         print("Terminated copying GenerateCapsule.py")
         return f"Invalid URL: {generate_capsule_py_sync_url}"
