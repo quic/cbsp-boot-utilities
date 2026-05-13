@@ -17,9 +17,9 @@ import traceback
 import uuid
 from enum import Enum
 
-import FVCreation_header as FVC_h
-import XmlFwEntryValidation as XFEV
-import XmlParser as xp
+from . import FVCreation_header as FVC_h
+from . import XmlFwEntryValidation as XFEV
+from . import XmlParser as xp
 
 print_logs = 0
 

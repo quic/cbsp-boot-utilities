@@ -7,8 +7,8 @@
 import ctypes
 import uuid
 
-import FVCreation as FVC
-import FVCreation_header as FVC_h
+from . import FVCreation as FVC
+from . import FVCreation_header as FVC_h
 
 
 def partition_fields_checking(raw_fwentry, raw_dev_path, meta_data_dev_path):
